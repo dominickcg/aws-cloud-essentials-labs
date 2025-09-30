@@ -20,6 +20,8 @@
 3. Desactivar **Bloquear todo el acceso público** para el lab.
 4. Crear el bucket.
 
+> **⚠️ Advertencia de seguridad:** Desactivar el bloqueo de acceso público permite que el contenido del bucket sea accesible desde internet. Solo hazlo para buckets destinados a hosting web público y nunca para datos sensibles o privados.
+
 ### 2. Subir los archivos de la página
 1. Abre la carpeta `website/`.
 2. Haz clic en **Cargar** en tu bucket S3.
@@ -33,7 +35,31 @@
 4. Documento de error: `404.html`.
 5. Guarda los cambios.
 
-### 4. Verificar
+### 4. Configurar política de acceso público
+1. Ve a **Permisos → Política de bucket → Editar**.
+2. Copia el contenido de [`bucket-policy.json`](bucket-policy.json) y reemplaza `mi-bucket` con el nombre de tu bucket.
+3. Pega la política en el editor y guarda los cambios.
+
+> **¿Por qué es necesaria esta política?** Esta política permite que cualquier persona acceda a los archivos de tu sitio web. Sin ella, los visitantes recibirían errores de acceso denegado.
+
+> **⚠️ Importante:** Solo usa esta configuración para contenido público. Nunca apliques políticas públicas a buckets con información sensible.
+
+### 5. Verificar
 1. Copia la URL del bucket.
 2. Abre la URL en el navegador.
 3. Verifica que todas las páginas (`index.html`, `about.html`, `contacto.html`) funcionen y que los estilos y scripts carguen correctamente.
+
+## Limpieza de recursos
+
+Para evitar costos innecesarios, elimina los recursos creados:
+
+1. **Vaciar el bucket S3:**
+   - Ve a **S3 → Buckets**
+   - Selecciona tu bucket
+   - **Vaciar** → Confirma escribiendo "eliminar permanentemente"
+
+2. **Eliminar el bucket:**
+   - Selecciona el bucket vacío
+   - **Eliminar** → Confirma escribiendo el nombre del bucket
+
+> **⚠️ Importante:** Una vez eliminado el bucket y sus objetos, no se pueden recuperar. Asegúrate de tener copias de seguridad si necesitas conservar el contenido.

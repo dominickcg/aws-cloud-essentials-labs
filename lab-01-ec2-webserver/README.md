@@ -24,7 +24,8 @@
 3. Configurar **Security Group**:
    - SSH (22) desde tu IP
    - HTTP (80) desde cualquier lugar
-4. En **Detalles avanzados → Datos de usuario**, pegar el contenido de `user-data.sh`.
+4. En **Detalles avanzados → Datos de usuario**, pegar el contenido de [`user-data.sh`](user-data.sh).
+   > Este script instala un servidor web Apache, obtiene las IPs de la instancia, y crea una página web automáticamente con esos datos.
 5. Lanzar la instancia.
 
 ### 2. Verificar despliegue
@@ -39,3 +40,24 @@
 - User Data ejecuta comandos como root. Solo incluye scripts de prueba.
 - SSH puede cerrarse después del lab para mayor seguridad.
 - Esta instancia servirá como base para los siguientes laboratorios.
+
+## Limpieza de recursos
+
+Para evitar costos innecesarios, elimina los recursos creados:
+
+1. **Terminar la instancia EC2:**
+   - Ve a **EC2 → Instancias**
+   - Selecciona tu instancia
+   - **Acciones → Estado de la instancia → Terminar instancia**
+
+2. **Eliminar Security Group (opcional):**
+   - Ve a **EC2 → Security Groups**
+   - Selecciona el security group creado para este lab
+   - **Acciones → Eliminar security group**
+
+3. **Eliminar par de claves (opcional):**
+   - Ve a **EC2 → Pares de claves**
+   - Selecciona el par creado para este lab
+   - **Acciones → Eliminar**
+
+> **💡 Tip:** Las instancias terminadas no generan costos, pero los volúmenes EBS asociados sí. Asegúrate de que se eliminen automáticamente al terminar la instancia.
