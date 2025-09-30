@@ -18,10 +18,12 @@
 ### 1. Crear la instancia EC2
 1. Ir a **EC2 → Lanzar instancia**.
 2. Configurar:
-   - **AMI:** Amazon Linux 2
+   - **Nombre:** `ec2-lab1-<tu-nombre>`
+   - **AMI:** Amazon Linux 2023
    - **Tipo de instancia:** t2.micro
    - **Par de claves:** seleccionar o crear nueva
 3. Configurar **Security Group**:
+   - **Nombre:** `ec2-lab1-<tu-nombre>-sg`
    - SSH (22) desde tu IP
    - HTTP (80) desde cualquier lugar
 4. En **Detalles avanzados → Datos de usuario**, pegar el contenido de [`user-data.sh`](user-data.sh).
