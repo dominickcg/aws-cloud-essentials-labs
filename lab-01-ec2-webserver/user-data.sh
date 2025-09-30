@@ -24,8 +24,8 @@ cat << EOF > /var/www/html/index.html
 <body style="font-family: Arial; text-align: center; margin-top: 50px;">
     <h1>¡Hola desde Amazon EC2! 🚀</h1>
     <p>Esta página fue desplegada automáticamente con User Data.</p>
-    <p>La IP privada de esta instancia es: <b>$PRIVATE_IP<b></p>
-    <p>La IP pública de esta instancia es: <b>$PUBLIC_IP<b></p>
+    <p>La IP privada de esta instancia es: <b>$PRIVATE_IP</b></p>
+    <p>La IP pública de esta instancia es: <b>$PUBLIC_IP</b></p>
 </body>
 </html>
 EOF

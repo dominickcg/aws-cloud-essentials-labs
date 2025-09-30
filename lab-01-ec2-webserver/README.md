@@ -1,6 +1,6 @@
 # Lab 1: Servidor Web en EC2
 
-## Objetivo
+## Objetivos
 - Lanzar una instancia EC2 que despliegue automáticamente una página web usando User Data.
 - Mostrar en la web la IP privada y pública de la instancia.
 - Entender conceptos básicos de EC2, Security Groups y User Data.
