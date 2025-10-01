@@ -95,6 +95,4 @@ Para evitar costos innecesarios:
 
 3. **Mantener EC2** para otros labs (o eliminar si no la necesitas)
 
-> **💡 Tip:** RDS genera costos por hora. Elimínala inmediatamente después del lab.
-
 > **⚠️ Importante:** Al eliminar RDS sin snapshot, perderás todos los datos permanentemente.
