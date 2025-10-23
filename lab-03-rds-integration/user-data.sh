@@ -1,6 +1,9 @@
 #!/bin/bash
 # User Data script para Lab 3 - Pagina Web Dinamica con RDS
 
+# IMPORTANTE: Reemplaza [RDS-ENDPOINT] con el endpoint real de tu RDS antes de usar este script
+RDS_ENDPOINT="[RDS-ENDPOINT]"
+
 # Actualizar paquetes
 yum update -y
 
@@ -11,14 +14,14 @@ systemctl enable httpd
 
 cd /var/www/html
 
-# Crear config.php
+# Crear config.php con el endpoint de RDS
 cat << 'EOF' > config.php
 <?php
 // Configuracion de la base de datos RDS
-define('DB_HOST', '[RDS-ENDPOINT]'); // Reemplazar con el endpoint real de RDS
+define('DB_HOST', '[RDS-ENDPOINT]'); // Endpoint de RDS
 define('DB_NAME', 'lab3_rds');
 define('DB_USER', 'admin');
-define('DB_PASS', 'Lab123456*'); // Usar la contrasena configurada en RDS
+define('DB_PASS', 'Lab123456**'); // Usar la contrasena configurada en RDS
 
 // Configurar zona horaria GMT-5
 date_default_timezone_set('America/Lima');
@@ -45,6 +48,9 @@ function conectarDB() {
 }
 ?>
 EOF
+
+# Reemplazar el placeholder con el endpoint real
+sed -i "s/\[RDS-ENDPOINT\]/$RDS_ENDPOINT/g" config.php
 
 # Crear index.php
 cat << 'EOF' > index.php
@@ -373,3 +379,31 @@ EOF
 # Establecer permisos correctos
 chown -R apache:apache /var/www/html
 chmod -R 755 /var/www/html
+
+# Configurar base de datos si el endpoint está configurado
+if [ "$RDS_ENDPOINT" != "[RDS-ENDPOINT]" ]; then
+    echo "Configurando base de datos con endpoint: $RDS_ENDPOINT"
+    
+    # Esperar a que RDS esté disponible
+    for i in {1..20}; do
+        if mysql -h $RDS_ENDPOINT -u admin -pLab123456** -e "SELECT 1;" 2>/dev/null; then
+            echo "RDS disponible, configurando base de datos..."
+            mysql -h $RDS_ENDPOINT -u admin -pLab123456** < database-setup.sql
+            if [ $? -eq 0 ]; then
+                echo "Base de datos configurada exitosamente"
+            else
+                echo "Error al configurar la base de datos"
+            fi
+            break
+        fi
+        echo "Esperando RDS... intento $i/20"
+        sleep 30
+    done
+else
+    echo "ADVERTENCIA: Endpoint de RDS no configurado. Edita el script user-data.sh antes de lanzar la instancia."
+fi
+
+# Reiniciar Apache
+systemctl restart httpd
+
+echo "Configuración completada."
