@@ -1,7 +1,7 @@
--- Script para configurar la base de datos del Lab 3
+-- Script para configurar la base de datos del Lab 4
 
-CREATE DATABASE IF NOT EXISTS lab3_rds;
-USE lab3_rds;
+CREATE DATABASE IF NOT EXISTS lab4_rds;
+USE lab4_rds;
 
 SET time_zone = '-05:00';
 

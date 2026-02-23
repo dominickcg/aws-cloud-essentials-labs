@@ -1,5 +1,5 @@
 #!/bin/bash
-# User Data script para Lab 3 - Pagina Web Dinamica con RDS
+# User Data script para Lab 4 - Pagina Web Dinamica con RDS
 
 # IMPORTANTE: Reemplaza [RDS-ENDPOINT] con el endpoint real de tu RDS antes de usar este script
 RDS_ENDPOINT="[RDS-ENDPOINT]"
@@ -19,7 +19,7 @@ cat << 'EOF' > config.php
 <?php
 // Configuracion de la base de datos RDS
 define('DB_HOST', '[RDS-ENDPOINT]'); // Endpoint de RDS
-define('DB_NAME', 'lab3_rds');
+define('DB_NAME', 'lab4_rds');
 define('DB_USER', 'admin');
 define('DB_PASS', 'Lab123456**'); // Usar la contrasena configurada en RDS
 
@@ -125,13 +125,13 @@ if ($mostrar_registros) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lab 3 - P&aacute;gina Web Din&aacute;mica</title>
+    <title>Lab 4 - P&aacute;gina Web Din&aacute;mica</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Lab 3: P&aacute;gina Web Din&aacute;mica</h1>
+            <h1>Lab 4: P&aacute;gina Web Din&aacute;mica</h1>
             <p>Conectando EC2 con RDS MySQL</p>
         </header>
 
@@ -221,7 +221,7 @@ if ($mostrar_registros) {
         </main>
 
         <footer>
-            <p>&copy; 2025 - AWS Cloud Essentials Lab 3</p>
+            <p>&copy; 2025 - AWS Cloud Essentials Lab 4</p>
         </footer>
     </div>
 </body>
@@ -230,7 +230,7 @@ EOF
 
 # Crear styles.css
 cat << 'EOF' > styles.css
-/* Estilos simples para Lab 3 */
+/* Estilos simples para Lab 4 */
 
 body {
     font-family: Arial, sans-serif;
@@ -357,10 +357,10 @@ EOF
 
 # Crear database-setup.sql
 cat << 'EOF' > database-setup.sql
--- Script para configurar la base de datos del Lab 3
+-- Script para configurar la base de datos del Lab 4
 
-CREATE DATABASE IF NOT EXISTS lab3_rds;
-USE lab3_rds;
+CREATE DATABASE IF NOT EXISTS lab4_rds;
+USE lab4_rds;
 
 SET time_zone = '-05:00';
 

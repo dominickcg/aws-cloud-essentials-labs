@@ -1,65 +1,145 @@
-# Lab 2: Publicar sitio web estático en S3
+# 🪣 Laboratorio 3: Sitio Web Estático en S3
 
-## Objetivos
-- Subir una página web estática completa a un bucket S3.
-- Configurar el bucket para hosting web.
-- Acceder al sitio usando la URL pública de S3.
+## Índice
+- [Objetivos de aprendizaje](#objetivos-de-aprendizaje)
+- [Tiempo estimado](#tiempo-estimado)
+- [Prerrequisitos](#prerrequisitos)
+- [Paso 1: Verificar región AWS](#paso-1-verificar-region-aws)
+- [Paso 2: Crear el bucket S3](#paso-2-crear-el-bucket-s3)
+- [Paso 3: Subir los archivos de la página](#paso-3-subir-los-archivos-de-la-pagina)
+- [Paso 4: Configurar hosting web estático](#paso-4-configurar-hosting-web-estatico)
+- [Paso 5: Configurar política de acceso público](#paso-5-configurar-politica-de-acceso-publico)
+- [Paso 6: Verificar el sitio web](#paso-6-verificar-el-sitio-web)
+- [Solución de problemas](#solucion-de-problemas)
+- [Limpieza de recursos](#limpieza-de-recursos)
 
-## Duración estimada
-30–40 minutos
+## Objetivos de aprendizaje
+- Crear y configurar un bucket S3 para hosting de sitios web estáticos
+- Subir contenido web a S3 y configurar permisos de acceso público
+- Habilitar y configurar el alojamiento de sitios web estáticos en S3
+- Aplicar políticas de bucket para permitir acceso público al contenido web
 
-## Requisitos
-- Cuenta de AWS con permisos para S3.
-- Navegador para acceder al sitio web.
+## Tiempo estimado
+30-40 minutos
 
-## Pasos
+## Prerrequisitos
+- Cuenta de AWS con permisos para Amazon S3
+- Navegador web para acceder al sitio publicado
+- Archivos del sitio web disponibles en la carpeta `website/` de este laboratorio
 
-### 1. Crear el bucket S3
-1. Ir a **S3 → Crear bucket**.
-2. Asignar un nombre único a nivel global (por ejemplo: `lab2-web-static-<tu-nombre>`).
-3. Desactivar **Bloquear todo el acceso público** para el lab.
-4. Crear el bucket.
+## Paso 1: Verificar región AWS
 
-> **⚠️ Advertencia de seguridad:** Desactivar el bloqueo de acceso público permite que el contenido del bucket sea accesible desde internet. Solo hazlo para buckets destinados a hosting web público y nunca para datos sensibles o privados.
+1. Verifique que está trabajando en la región correcta:
+   - En la esquina superior derecha de la consola de AWS
+   - Confirme que dice la región estipulada por el instructor
+   - Si no es correcta, haga clic y seleccione la región indicada
 
-### 2. Subir los archivos de la página
-1. Abre la carpeta `website/`.
-2. Haz clic en **Cargar** en tu bucket S3.
-3. Selecciona todos los archivos y carpetas (`assets`, `scripts`, `styles`, `index.html`, etc.).
-4. Mantén las configuraciones por defecto y haz clic en **Cargar**.
+## Paso 2: Crear el bucket S3
 
-### 3. Configurar hosting web estático
-1. Ve a **Propiedades → Alojamiento de sitios web estáticos → Editar**.
-2. Selecciona **Habilitar**.
-3. Documento de índice: `index.html`.
-4. Documento de error: `404.html`.
-5. Guarda los cambios.
+1. En la barra de búsqueda global (parte superior), escriba **S3** y seleccione el servicio
+2. Haga clic en el botón naranja **Crear bucket**
+3. Configure los siguientes parámetros:
+   - **Nombre del bucket**: `s3-sitio-web-{nombre-participante}` (debe ser único a nivel global)
+   - **Región de AWS**: Mantenga la región actual
+   - **Bloquear todo el acceso público**: Desactive esta opción (desmarque la casilla)
+   - Marque la casilla de confirmación que indica que comprende que el bucket será público
+4. Deje las demás configuraciones con sus valores predeterminados
+5. Haga clic en el botón naranja **Crear bucket** al final de la página
 
-### 4. Configurar política de acceso público
-1. Ve a **Permisos → Política de bucket → Editar**.
-2. Copia el contenido de [`bucket-policy.json`](bucket-policy.json) y reemplaza `mi-bucket` con el nombre de tu bucket.
-3. Pega la política en el editor y guarda los cambios.
+**✓ Verificación**: En la lista de buckets, confirme que:
+- Su bucket `s3-sitio-web-{nombre-participante}` aparece en la lista
+- La columna **Acceso** muestra "Objetos pueden ser públicos"
 
-> **¿Por qué es necesaria esta política?** Esta política permite que cualquier persona acceda a los archivos de tu sitio web. Sin ella, los visitantes recibirían errores de acceso denegado.
+⚠️ **Advertencia de seguridad**: Desactivar el bloqueo de acceso público permite que el contenido del bucket sea accesible desde internet. Solo realice esta configuración para buckets destinados a hosting web público y nunca para datos sensibles o privados.
 
-> **⚠️ Importante:** Solo usa esta configuración para contenido público. Nunca apliques políticas públicas a buckets con información sensible.
+## Paso 3: Subir los archivos de la página
 
-### 5. Verificar
-1. Copia la URL del bucket.
-2. Abre la URL en el navegador.
-3. Verifica que todas las páginas (`index.html`, `about.html`, `contacto.html`) funcionen y que los estilos y scripts carguen correctamente.
+1. **Preparar los archivos localmente**:
+   - Descargue el archivo [`website.zip`](website.zip) ubicado en esta carpeta del laboratorio a su computadora
+   - Descomprima el archivo `website.zip` en su computadora local
+   - Verifique que la carpeta descomprimida contiene: `index.html`, `about.html`, `contacto.html` y las carpetas `assets`, `scripts`, `styles`
+
+2. **Subir los archivos al bucket S3**:
+   - En la lista de buckets, haga clic en el nombre de su bucket `s3-sitio-web-{nombre-participante}`
+   - Haga clic en el botón naranja **Cargar**
+   - Haga clic en **Agregar archivos** y **Agregar carpetas**
+   - Seleccione todos los archivos y carpetas de la carpeta descomprimida `website/`
+   - Asegúrese de incluir: `index.html`, `about.html`, `contacto.html` y las carpetas `assets`, `scripts`, `styles`
+   - Mantenga las configuraciones predeterminadas
+   - Haga clic en el botón naranja **Cargar** al final de la página
+   - Espere a que la carga se complete y haga clic en **Cerrar**
+
+> **Nota**: La consola de S3 no soporta la extracción automática de archivos ZIP. Debe descomprimir el archivo `website.zip` en su computadora local antes de subir los archivos al bucket.
+
+**✓ Verificación**: En la vista de objetos del bucket, confirme que:
+- Puede ver los archivos `index.html`, `about.html`, `contacto.html`
+- Puede ver las carpetas `assets`, `scripts`, `styles`
+- El estado de carga indica "Correcto" para todos los objetos
+
+## Paso 4: Configurar hosting web estático
+
+1. En la página de su bucket, haga clic en la pestaña **Propiedades**
+2. Desplácese hacia abajo hasta la sección **Alojamiento de sitios web estáticos**
+3. Haga clic en el botón **Editar**
+4. Configure los siguientes parámetros:
+   - **Alojamiento de sitios web estáticos**: Seleccione **Habilitar**
+   - **Tipo de alojamiento**: Seleccione **Alojar un sitio web estático**
+   - **Documento de índice**: `index.html`
+   - **Documento de error**: `404.html`
+5. Haga clic en el botón naranja **Guardar cambios**
+
+**✓ Verificación**: En la sección **Alojamiento de sitios web estáticos**, confirme que:
+- El estado muestra **Habilitado**
+- Aparece una **URL de punto de enlace del sitio web de bucket** (anótela para usarla más adelante)
+
+## Paso 5: Configurar política de acceso público
+
+1. En la página de su bucket, haga clic en la pestaña **Permisos**
+2. Desplácese hasta la sección **Política de bucket**
+3. Haga clic en el botón **Editar**
+4. Copie el contenido del archivo [`bucket-policy.json`](bucket-policy.json) ubicado en esta carpeta
+5. Pegue el contenido en el editor de políticas
+6. Reemplace el texto `mi-bucket` con el nombre de su bucket: `s3-sitio-web-{nombre-participante}`
+7. Haga clic en el botón naranja **Guardar cambios**
+
+**✓ Verificación**: En la sección **Política de bucket**, confirme que:
+- La política aparece en el editor
+- No hay mensajes de error
+- El banner superior indica que la política se guardó correctamente
+
+> **¿Por qué es necesaria esta política?** Esta política permite que cualquier persona acceda a los archivos de su sitio web mediante el protocolo HTTP. Sin ella, los visitantes recibirían errores de acceso denegado al intentar ver el sitio.
+
+⚠️ **Importante**: Solo utilice esta configuración para contenido público destinado a ser compartido abiertamente. Nunca aplique políticas de acceso público a buckets que contengan información sensible o privada.
+
+## Paso 6: Verificar el sitio web
+
+1. Regrese a la pestaña **Propiedades** de su bucket
+2. Desplácese hasta la sección **Alojamiento de sitios web estáticos**
+3. Copie la **URL de punto de enlace del sitio web de bucket**
+4. Abra una nueva pestaña en su navegador web
+5. Pegue la URL y presione Enter
+6. Verifique que el sitio web se carga correctamente:
+   - La página principal (`index.html`) se muestra con estilos aplicados
+   - Los enlaces de navegación funcionan correctamente
+   - Las páginas `about.html` y `contacto.html` son accesibles
+   - Las imágenes y recursos de las carpetas `assets`, `scripts` y `styles` se cargan correctamente
+
+**✓ Verificación**: Confirme que:
+- El sitio web es accesible desde la URL pública de S3
+- Todas las páginas se muestran correctamente con sus estilos
+- Los enlaces de navegación entre páginas funcionan
+- Las imágenes y recursos multimedia se cargan sin errores
+
+## Solución de problemas
+
+Si encuentra dificultades durante este laboratorio, consulte la [Guía de Solución de Problemas](TROUBLESHOOTING.md) que contiene soluciones a errores comunes.
+
+**Errores que requieren asistencia del instructor:**
+- Errores de permisos IAM al crear o configurar buckets
+- Errores de límites de cuota de AWS
 
 ## Limpieza de recursos
 
-Para evitar costos innecesarios, elimina los recursos creados:
+Para instrucciones detalladas sobre cómo eliminar los recursos creados en este laboratorio, consulte el documento [LIMPIEZA.md](LIMPIEZA.md).
 
-1. **Vaciar el bucket S3:**
-   - Ve a **S3 → Buckets**
-   - Selecciona tu bucket
-   - **Vaciar** → Confirma escribiendo "eliminar permanentemente"
-
-2. **Eliminar el bucket:**
-   - Selecciona el bucket vacío
-   - **Eliminar** → Confirma escribiendo el nombre del bucket
-
-> **⚠️ Importante:** Una vez eliminado el bucket y sus objetos, no se pueden recuperar. Asegúrate de tener copias de seguridad si necesitas conservar el contenido.
+**Nota**: La limpieza de recursos es opcional. Solo realícela si no continuará con laboratorios posteriores o si desea evitar costos de almacenamiento.
