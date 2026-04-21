@@ -109,6 +109,4 @@ Si encuentra dificultades durante este laboratorio, consulte la [Guía de Soluci
 
 ## Limpieza de recursos
 
-⚠️ **Importante**: Esta limpieza es opcional. Solo realícela si NO continuará con el Laboratorio 4 del programa.
-
 Para instrucciones detalladas sobre cómo eliminar los recursos creados en este laboratorio, consulte el documento [LIMPIEZA.md](LIMPIEZA.md).
