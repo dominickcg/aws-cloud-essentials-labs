@@ -10,7 +10,7 @@ A través de siete laboratorios progresivos, aprenderá a crear y configurar rec
 
 Cada laboratorio está diseñado para ejecutarse en un entorno compartido, donde múltiples participantes trabajan simultáneamente siguiendo convenciones de nombres que garantizan la organización y evitan conflictos.
 
-## Objetivos de Aprendizaje Generales
+## Objetivos de Aprendizaje
 
 Al completar este programa, usted será capaz de:
 
@@ -25,7 +25,7 @@ Al completar este programa, usted será capaz de:
 - Aplicar mejores prácticas de seguridad mediante Grupos de seguridad, Network ACLs y AWS WAF
 - Gestionar recursos en la consola de AWS siguiendo convenciones de nombres en entornos compartidos
 
-## Prerrequisitos del Programa
+## Prerrequisitos
 
 Antes de comenzar con los laboratorios, asegúrese de cumplir con los siguientes requisitos:
 
@@ -49,9 +49,9 @@ Antes de comenzar con los laboratorios, asegúrese de cumplir con los siguientes
 
 ## Convenciones de Nombres
 
-En todos los laboratorios, utilizará el placeholder `{nombre-participante}` al crear recursos AWS. Reemplace este placeholder con su nombre de participante asignado para identificar sus recursos en el entorno compartido.
+En todos los laboratorios, utilizará el placeholder `{nombre-participante}` al crear recursos AWS. Reemplace este placeholder con su nombre para identificar sus recursos en el entorno compartido.
 
-**Ejemplo**: Si su nombre de participante es `carlos`, un recurso llamado `ec2-webserver-{nombre-participante}` se creará como `ec2-webserver-carlos`.
+**Ejemplo**: Si su nombre es `carlos`, un recurso llamado `ec2-webserver-{nombre-participante}` se creará como `ec2-webserver-carlos`.
 
 ## Recursos Compartidos
 
