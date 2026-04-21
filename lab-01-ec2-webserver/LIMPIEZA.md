@@ -1,4 +1,4 @@
-# 🧹 Limpieza de Recursos - Laboratorio 1 (Opcional)
+# Limpieza de Recursos - Laboratorio 1 (Opcional)
 
 ⚠️ **Nota importante**: Esta limpieza es **opcional**. Solo realícela si **NO continuará con el Laboratorio 4** del programa AWS Cloud Essentials.
 
@@ -9,7 +9,7 @@ Realice esta limpieza únicamente si:
 - No planea realizar el Laboratorio 4 (Página Web Dinámica con RDS)
 - Desea eliminar todos los recursos para evitar costos innecesarios
 
-⚠️ **Advertencia**: Los recursos creados en este laboratorio (instancia EC2 y Security Group) se utilizan como base en el **Laboratorio 4**. Si elimina estos recursos, deberá recrearlos cuando llegue al Laboratorio 4.
+⚠️ **Advertencia**: Los recursos creados en este laboratorio (instancia EC2 y Grupo de seguridad) se utilizan como base en el **Laboratorio 4**. Si elimina estos recursos, deberá recrearlos cuando llegue al Laboratorio 4.
 
 ## Recursos a eliminar
 
@@ -37,7 +37,7 @@ Este laboratorio creó los siguientes recursos:
 
 ⚠️ **Consecuencia**: Una vez terminada, la instancia EC2 **no se puede recuperar**. Todos los datos almacenados en la instancia se perderán permanentemente.
 
-### 2. Eliminar el Security Group
+### 2. Eliminar el Grupo de seguridad
 
 1. En el panel de navegación de la izquierda de la consola EC2, haga clic en **Grupos de seguridad** (dentro de la sección **Red y seguridad**).
 
@@ -49,7 +49,7 @@ Este laboratorio creó los siguientes recursos:
 
 5. En el cuadro de diálogo de confirmación, haga clic en **Eliminar**.
 
-⚠️ **Consecuencia**: El Security Group eliminado **no se puede recuperar**. Si necesita recrearlo, deberá configurar nuevamente todas las reglas de entrada y salida.
+⚠️ **Consecuencia**: El Grupo de seguridad eliminado **no se puede recuperar**. Si necesita recrearlo, deberá configurar nuevamente todas las reglas de entrada y salida.
 
 ## Advertencias importantes
 

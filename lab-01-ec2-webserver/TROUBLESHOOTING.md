@@ -9,15 +9,15 @@ Esta guía contiene soluciones a errores comunes que pueden ocurrir durante la e
 **Síntoma**: Al intentar acceder a la dirección IP pública de la instancia en el navegador, la página no carga o muestra un error de timeout.
 
 **Causas posibles**:
-1. El Security Group no tiene el puerto 80 (HTTP) abierto correctamente
-2. El Security Group tiene el puerto 80 abierto pero con origen incorrecto
+1. El Grupo de seguridad no tiene el puerto 80 (HTTP) abierto correctamente
+2. El Grupo de seguridad tiene el puerto 80 abierto pero con origen incorrecto
 3. La instancia aún está iniciando y el User Data no ha terminado de ejecutarse
 4. El servidor web Apache no se instaló correctamente
 
 **Solución**:
-1. Verifique el Security Group de la instancia:
+1. Verifique el Grupo de seguridad de la instancia:
    - En la consola de EC2, seleccione su instancia
-   - En la pestaña **Seguridad**, haga clic en el nombre del Security Group
+   - En la pestaña **Seguridad**, haga clic en el nombre del Grupo de seguridad
    - Verifique que existe una regla de entrada para el puerto 80 con origen 0.0.0.0/0
    - Si no existe, haga clic en **Editar reglas de entrada** y agregue la regla HTTP
 2. Espere 3-5 minutos después del lanzamiento para que el User Data termine de ejecutarse
@@ -31,13 +31,13 @@ Esta guía contiene soluciones a errores comunes que pueden ocurrir durante la e
 **Síntoma**: Al intentar conectar por SSH, aparece un error de timeout o "Connection refused".
 
 **Causas posibles**:
-1. El Security Group no tiene el puerto 22 (SSH) abierto
-2. El Security Group tiene el puerto 22 abierto pero con origen incorrecto (no incluye su IP actual)
+1. El Grupo de seguridad no tiene el puerto 22 (SSH) abierto
+2. El Grupo de seguridad tiene el puerto 22 abierto pero con origen incorrecto (no incluye su IP actual)
 3. La instancia no tiene IP pública asignada
 4. El par de claves utilizado no coincide con el configurado en la instancia
 
 **Solución**:
-1. Verifique el Security Group:
+1. Verifique el Grupo de seguridad:
    - Confirme que existe una regla de entrada para el puerto 22
    - Verifique que el origen incluye su dirección IP actual (puede usar "Mi IP" al crear la regla)
 2. Verifique que la instancia tiene una IP pública asignada en los detalles de la instancia
@@ -101,20 +101,20 @@ Esta guía contiene soluciones a errores comunes que pueden ocurrir durante la e
 
 ---
 
-### Error: No puedo crear el Security Group con el nombre especificado
+### Error: No puedo crear el Grupo de seguridad con el nombre especificado
 
-**Síntoma**: Al intentar crear el Security Group, aparece un error indicando que el nombre ya existe.
+**Síntoma**: Al intentar crear el Grupo de seguridad, aparece un error indicando que el nombre ya existe.
 
 **Causas posibles**:
-1. Ya existe un Security Group con ese nombre en su cuenta
-2. Eliminó una instancia anterior pero el Security Group no se eliminó
+1. Ya existe un Grupo de seguridad con ese nombre en su cuenta
+2. Eliminó una instancia anterior pero el Grupo de seguridad no se eliminó
 
 **Solución**:
 1. En el panel de navegación de EC2, haga clic en **Grupos de seguridad**
-2. Busque el Security Group con el nombre `ec2-sg-webserver-{nombre-participante}`
+2. Busque el Grupo de seguridad con el nombre `ec2-sg-webserver-{nombre-participante}`
 3. Si existe y no está en uso, selecciónelo y haga clic en **Acciones** > **Eliminar grupos de seguridad**
 4. Si está en uso por otra instancia, primero elimine o modifique esa instancia
-5. Intente crear el Security Group nuevamente
+5. Intente crear el Grupo de seguridad nuevamente
 
 ---
 

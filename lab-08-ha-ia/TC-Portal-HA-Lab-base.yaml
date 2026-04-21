@@ -1,0 +1,846 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Portal del Ciudadano - Tribunal Constitucional - Arquitectura de Alta Disponibilidad (versión base)
+
+Parameters:
+  EmailAlerts:
+    Type: String
+    Description: Correo electrónico para suscripción a alertas SNS
+    AllowedPattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+    ConstraintDescription: Debe ser una dirección de correo electrónico válida
+
+Resources:
+  # ==================== NETWORKING ====================
+  
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-vpc'
+
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-public-a'
+
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-public-b'
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-igw'
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-public-rt'
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  SubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
+
+  SubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetB
+      RouteTableId: !Ref PublicRouteTable
+
+
+  # ==================== SECURITY GROUPS ====================
+  
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${AWS::StackName}-sg-web'
+      GroupDescription: Security group para instancias web del Portal TC
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP desde Internet
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS desde Internet
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-sg-web'
+
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${AWS::StackName}-sg-db'
+      GroupDescription: Security group para base de datos RDS
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref WebSecurityGroup
+          Description: MySQL desde instancias web
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-sg-db'
+
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${AWS::StackName}-sg-lambda'
+      GroupDescription: Security group para funciones Lambda
+      VpcId: !Ref VPC
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Acceso a servicios AWS
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-sg-lambda'
+
+
+  # ==================== COMPUTE RESOURCES (HA) ====================
+  
+  LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub '${AWS::StackName}-lt'
+      LaunchTemplateData:
+        ImageId: !Sub '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
+        InstanceType: t2.micro
+        SecurityGroupIds:
+          - !Ref WebSecurityGroup
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum update -y
+            yum install -y httpd
+            systemctl start httpd
+            systemctl enable httpd
+            
+            # Crear directorio de la aplicación
+            mkdir -p /var/www/html
+            cd /var/www/html
+            
+            # Crear página principal
+            cat > index.html << 'EOF'
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Portal del Ciudadano - Tribunal Constitucional</title>
+                <link rel="stylesheet" href="css/styles.css">
+            </head>
+            <body>
+                <header>
+                    <h1>🏛️ Portal del Ciudadano</h1>
+                    <h2>Tribunal Constitucional</h2>
+                </header>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="chatbot.html">Asistente Constitucional</a></li>
+                        <li><a href="resoluciones.html">Resoluciones</a></li>
+                    </ul>
+                </nav>
+                <main>
+                    <section class="welcome">
+                        <h3>Bienvenido al Portal del Ciudadano</h3>
+                        <p>Acceda a información sobre expedientes constitucionales, consulte resoluciones y utilice nuestro asistente de IA para resolver dudas legales.</p>
+                    </section>
+                    <section class="features">
+                        <div class="feature-card">
+                            <h4>Asistente Constitucional</h4>
+                            <p>Chatbot con IA generativa para resolver consultas legales en lenguaje sencillo.</p>
+                            <a href="chatbot.html" class="btn">Acceder</a>
+                        </div>
+                        <div class="feature-card">
+                            <h4>Resoluciones</h4>
+                            <p>Consulte las últimas resoluciones con síntesis de voz para accesibilidad.</p>
+                            <a href="resoluciones.html" class="btn">Ver Resoluciones</a>
+                        </div>
+                    </section>
+                </main>
+                <footer>
+                    <p>&copy; 2026 Tribunal Constitucional - Portal del Ciudadano</p>
+                </footer>
+            </body>
+            </html>
+            EOF
+            
+            # Crear directorio CSS
+            mkdir -p css
+            cat > css/styles.css << 'EOF'
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                background-color: #f4f4f4;
+            }
+            
+            header {
+                background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+                color: white;
+                text-align: center;
+                padding: 2rem 1rem;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+            
+            header h1 {
+                font-size: 2.5rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            header h2 {
+                font-size: 1.5rem;
+                font-weight: 300;
+            }
+            
+            nav {
+                background-color: #1e40af;
+                padding: 0;
+            }
+            
+            nav ul {
+                list-style: none;
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            nav ul li {
+                margin: 0;
+            }
+            
+            nav ul li a {
+                display: block;
+                color: white;
+                text-decoration: none;
+                padding: 1rem 2rem;
+                transition: background-color 0.3s;
+            }
+            
+            nav ul li a:hover {
+                background-color: #1e3a8a;
+            }
+            
+            main {
+                max-width: 1200px;
+                margin: 2rem auto;
+                padding: 0 1rem;
+            }
+            
+            .welcome {
+                background: white;
+                padding: 2rem;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                margin-bottom: 2rem;
+            }
+            
+            .welcome h3 {
+                color: #1e3a8a;
+                margin-bottom: 1rem;
+            }
+            
+            .features {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 2rem;
+            }
+            
+            .feature-card {
+                background: white;
+                padding: 2rem;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                text-align: center;
+            }
+            
+            .feature-card h4 {
+                color: #1e3a8a;
+                margin-bottom: 1rem;
+            }
+            
+            .btn {
+                display: inline-block;
+                background-color: #3b82f6;
+                color: white;
+                padding: 0.75rem 1.5rem;
+                text-decoration: none;
+                border-radius: 5px;
+                margin-top: 1rem;
+                transition: background-color 0.3s;
+            }
+            
+            .btn:hover {
+                background-color: #1e40af;
+            }
+            
+            .chat-container {
+                background: white;
+                padding: 2rem;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                max-width: 800px;
+                margin: 0 auto;
+            }
+            
+            .chat-messages {
+                height: 400px;
+                overflow-y: auto;
+                border: 1px solid #ddd;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                border-radius: 5px;
+                background-color: #f9f9f9;
+            }
+            
+            .message {
+                margin-bottom: 1rem;
+                padding: 0.75rem;
+                border-radius: 5px;
+            }
+            
+            .message.user {
+                background-color: #e0f2fe;
+                text-align: right;
+            }
+            
+            .message.assistant {
+                background-color: #f0f9ff;
+            }
+            
+            .chat-input {
+                display: flex;
+                gap: 1rem;
+            }
+            
+            .chat-input input {
+                flex: 1;
+                padding: 0.75rem;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                font-size: 1rem;
+            }
+            
+            .chat-input button {
+                padding: 0.75rem 2rem;
+                background-color: #3b82f6;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 1rem;
+                transition: background-color 0.3s;
+            }
+            
+            .chat-input button:hover {
+                background-color: #1e40af;
+            }
+            
+            .resolucion-container {
+                background: white;
+                padding: 2rem;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                max-width: 900px;
+                margin: 0 auto;
+            }
+            
+            .resolucion-text {
+                background-color: #f9f9f9;
+                padding: 1.5rem;
+                border-left: 4px solid #3b82f6;
+                margin-bottom: 1.5rem;
+                line-height: 1.8;
+            }
+            
+            .audio-controls {
+                text-align: center;
+            }
+            
+            footer {
+                background-color: #1e3a8a;
+                color: white;
+                text-align: center;
+                padding: 1.5rem;
+                margin-top: 3rem;
+            }
+            
+            @media (max-width: 768px) {
+                header h1 {
+                    font-size: 1.8rem;
+                }
+                
+                nav ul {
+                    flex-direction: column;
+                }
+                
+                .features {
+                    grid-template-columns: 1fr;
+                }
+            }
+            EOF
+            
+            # Crear página de chatbot
+            cat > chatbot.html << 'EOF'
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Asistente Constitucional - Portal TC</title>
+                <link rel="stylesheet" href="css/styles.css">
+            </head>
+            <body>
+                <header>
+                    <h1>🏛️ Portal del Ciudadano</h1>
+                    <h2>Tribunal Constitucional</h2>
+                </header>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="chatbot.html">Asistente Constitucional</a></li>
+                        <li><a href="resoluciones.html">Resoluciones</a></li>
+                    </ul>
+                </nav>
+                <main>
+                    <div class="chat-container">
+                        <h3>Asistente Constitucional con IA</h3>
+                        <p>Pregunte sobre conceptos legales y recibirá respuestas en lenguaje sencillo.</p>
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message assistant">
+                                <strong>Asistente:</strong> Bienvenido. Puede preguntarme sobre conceptos constitucionales y le responderé en lenguaje claro.
+                            </div>
+                        </div>
+                        <div class="chat-input">
+                            <input type="text" id="userInput" placeholder="Escriba su pregunta aquí..." />
+                            <button onclick="sendMessage()">Enviar</button>
+                        </div>
+                    </div>
+                </main>
+                <footer>
+                    <p>&copy; 2026 Tribunal Constitucional - Portal del Ciudadano</p>
+                </footer>
+                <script src="js/chatbot.js"></script>
+            </body>
+            </html>
+            EOF
+            
+            # Crear página de resoluciones
+            cat > resoluciones.html << 'EOF'
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Resoluciones - Portal TC</title>
+                <link rel="stylesheet" href="css/styles.css">
+            </head>
+            <body>
+                <header>
+                    <h1>🏛️ Portal del Ciudadano</h1>
+                    <h2>Tribunal Constitucional</h2>
+                </header>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="chatbot.html">Asistente Constitucional</a></li>
+                        <li><a href="resoluciones.html">Resoluciones</a></li>
+                    </ul>
+                </nav>
+                <main>
+                    <div class="resolucion-container">
+                        <h3>Últimas Resoluciones</h3>
+                        <h4>Expediente N° 001-2026 - Habeas Corpus</h4>
+                        <div class="resolucion-text" id="resolucionText">
+                            <p>El Tribunal Constitucional, en sesión de Pleno Jurisdiccional, ha resuelto declarar FUNDADO el recurso de Habeas Corpus interpuesto por el ciudadano en defensa de su libertad individual. Se ha determinado que existió una vulneración al derecho fundamental a la libertad personal consagrado en el artículo 2 inciso 24 de la Constitución Política. En consecuencia, se ordena la inmediata libertad del recurrente y se dispone que las autoridades competentes adopten las medidas necesarias para garantizar el pleno ejercicio de sus derechos constitucionales.</p>
+                        </div>
+                        <div class="audio-controls">
+                            <button class="btn" onclick="playAudio()">▶ Escuchar Resumen</button>
+                            <audio id="audioPlayer" controls style="display:none; margin-top: 1rem; width: 100%;"></audio>
+                        </div>
+                    </div>
+                </main>
+                <footer>
+                    <p>&copy; 2026 Tribunal Constitucional - Portal del Ciudadano</p>
+                </footer>
+                <script src="js/polly.js"></script>
+            </body>
+            </html>
+            EOF
+            
+            # Crear directorio JS
+            mkdir -p js
+            cat > js/chatbot.js << 'EOF'
+            // Simulación del asistente constitucional
+            function sendMessage() {
+                var input = document.getElementById('userInput');
+                var messagesDiv = document.getElementById('chatMessages');
+                var userMessage = input.value.trim();
+
+                if (!userMessage) return;
+
+                // Mostrar mensaje del usuario
+                var userDiv = document.createElement('div');
+                userDiv.className = 'message user';
+                userDiv.innerHTML = '<strong>Usted:</strong> ' + userMessage;
+                messagesDiv.appendChild(userDiv);
+
+                input.value = '';
+
+                // Simular respuesta del asistente
+                setTimeout(function() {
+                    var assistantDiv = document.createElement('div');
+                    assistantDiv.className = 'message assistant';
+                    assistantDiv.innerHTML = '<strong>Asistente:</strong> Gracias por su consulta. En una implementación completa, esta respuesta sería generada por Amazon Bedrock utilizando un modelo de IA generativa para explicar conceptos constitucionales en lenguaje sencillo.';
+                    messagesDiv.appendChild(assistantDiv);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }, 1500);
+
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+
+            // Permitir enviar con Enter
+            document.getElementById('userInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            EOF
+            
+            cat > js/polly.js << 'EOF'
+            // Simulación de síntesis de voz con Amazon Polly
+            function playAudio() {
+                var text = document.getElementById('resolucionText').innerText;
+                var audioPlayer = document.getElementById('audioPlayer');
+
+                alert('En una implementación completa, Amazon Polly convertiría este texto a voz con la voz neural Lupe en español:\n\n' + text.substring(0, 200) + '...');
+
+                audioPlayer.style.display = 'block';
+            }
+            EOF
+            
+            # Ajustar permisos
+            chown -R apache:apache /var/www/html
+            chmod -R 755 /var/www/html
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub '${AWS::StackName}-web-instance'
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub '${AWS::StackName}-alb'
+      Type: application
+      Scheme: internet-facing
+      IpAddressType: ipv4
+      Subnets:
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+      SecurityGroups:
+        - !Ref WebSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-alb'
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub '${AWS::StackName}-tg'
+      Port: 80
+      Protocol: HTTP
+      VpcId: !Ref VPC
+      HealthCheckEnabled: true
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 3
+      TargetType: instance
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-tg'
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: !Sub '${AWS::StackName}-asg'
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      MinSize: 2
+      MaxSize: 4
+      DesiredCapacity: 2
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 300
+      VPCZoneIdentifier:
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+      TargetGroupARNs:
+        - !Ref TargetGroup
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-asg-instance'
+          PropagateAtLaunch: true
+
+
+  # ==================== DATABASE RESOURCES (HA) ====================
+  
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: !Sub '${AWS::StackName}-db-subnet-group'
+      DBSubnetGroupDescription: Subnet group para RDS Multi-AZ del Portal TC
+      SubnetIds:
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-db-subnet-group'
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Sub '${AWS::StackName}-db'
+      Engine: mysql
+      EngineVersion: '8.0.40'
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: 20
+      StorageType: gp2
+      MasterUsername: admin
+      MasterUserPassword: TCPortal2026!
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+      MultiAZ: true
+      PubliclyAccessible: false
+      BackupRetentionPeriod: 7
+      PreferredBackupWindow: '03:00-04:00'
+      PreferredMaintenanceWindow: 'sun:04:00-sun:05:00'
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-db'
+
+
+  # ==================== EVENT-DRIVEN RESOURCES ====================
+  
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${AWS::StackName}-alertas'
+      DisplayName: Alertas de Resoluciones del Tribunal Constitucional
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-alertas'
+
+  SNSEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      TopicArn: !Ref SNSTopic
+      Endpoint: !Ref EmailAlerts
+
+  SQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub '${AWS::StackName}-expedientes'
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 345600
+      ReceiveMessageWaitTimeSeconds: 20
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-expedientes'
+
+  SQSQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref SQSQueue
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action:
+              - sqs:SendMessage
+            Resource: !GetAtt SQSQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref SNSTopic
+
+  SNSSQSSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: sqs
+      TopicArn: !Ref SNSTopic
+      Endpoint: !GetAtt SQSQueue.Arn
+      RawMessageDelivery: true
+
+
+  # ==================== SERVERLESS RESOURCES ====================
+  
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: SQSAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt SQSQueue.Arn
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*'
+
+  ProcesadorExpedientes:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-ProcesadorExpedientes'
+      Runtime: python3.11
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 60
+      Code:
+        ZipFile: |
+          import json
+          import logging
+          
+          logger = logging.getLogger()
+          logger.setLevel(logging.INFO)
+          
+          def lambda_handler(event, context):
+              logger.info('Procesando mensajes de expedientes constitucionales')
+              
+              for record in event['Records']:
+                  message_body = record['body']
+                  logger.info(f'Mensaje recibido: {message_body}')
+                  
+                  # Aquí se procesaría el expediente
+                  # Por ejemplo: guardar en base de datos, notificar, etc.
+                  logger.info(f'Expediente procesado exitosamente')
+              
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps('Expedientes procesados correctamente')
+              }
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-ProcesadorExpedientes'
+
+  LambdaSQSEventSource:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt SQSQueue.Arn
+      FunctionName: !Ref ProcesadorExpedientes
+      BatchSize: 10
+      Enabled: true
+
+
+Outputs:
+  PortalURL:
+    Description: URL del Application Load Balancer para acceder al Portal TC
+    Value: !Sub 'http://${ApplicationLoadBalancer.DNSName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-PortalURL'
+
+  SNSTopicARN:
+    Description: ARN del tema SNS para alertas de resoluciones
+    Value: !Ref SNSTopic
+    Export:
+      Name: !Sub '${AWS::StackName}-SNSTopicARN'
+
+  SQSQueueURL:
+    Description: URL de la cola SQS para procesamiento de expedientes
+    Value: !Ref SQSQueue
+    Export:
+      Name: !Sub '${AWS::StackName}-SQSQueueURL'
+
+  RDSEndpoint:
+    Description: Endpoint de la base de datos RDS Multi-AZ
+    Value: !GetAtt RDSInstance.Endpoint.Address
+    Export:
+      Name: !Sub '${AWS::StackName}-RDSEndpoint'

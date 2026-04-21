@@ -31,7 +31,7 @@ cat << EOF > /var/www/html/index.html
 </head>
 <body>
     <div class="container">
-        <h1>¡Hola desde Amazon EC2! 🚀</h1>
+        <h1>¡Hola desde Amazon EC2!</h1>
         <p>Esta página fue desplegada automáticamente con User Data.</p>
         <div class="ip-info">
             <p><strong>IP Privada:</strong> $PRIVATE_IP</p>
