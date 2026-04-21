@@ -1,4 +1,4 @@
-# 🏛️ Laboratorio 8: Portal del Ciudadano para Consulta de Expedientes Constitucionales - Arquitectura en Alta Disponibilidad
+# 🏛️ Laboratorio 7: Portal del Ciudadano para Consulta de Expedientes Constitucionales - Arquitectura en Alta Disponibilidad
 
 ## Índice
 - [Objetivos de aprendizaje](#objetivos-de-aprendizaje)
@@ -11,7 +11,7 @@
   - [Paso 2: Lanzar la pila de CloudFormation](#paso-2-lanzar-la-pila-de-cloudformation)
   - [Paso 3: Monitorear eventos de la pila y confirmar suscripción de correo](#paso-3-monitorear-eventos-de-la-pila-y-confirmar-suscripción-de-correo)
 - [Fase 2: Alta Disponibilidad y Seguridad (30 min)](#fase-2-alta-disponibilidad-y-seguridad-30-min)
-  - [Paso 4: Acceder al portal del TC](#paso-4-acceder-al-portal-del-tc)
+  - [Paso 4: Acceder al portal](#paso-4-acceder-al-portal)
   - [Paso 5: Inspeccionar AWS WAF](#paso-5-inspeccionar-aws-waf)
   - [Paso 6: Simular fallo de servidor](#paso-6-simular-fallo-de-servidor)
   - [Paso 7: Inspeccionar RDS Multi-AZ y Secrets Manager](#paso-7-inspeccionar-rds-multi-az-y-secrets-manager)
@@ -54,9 +54,9 @@ Para completar este laboratorio, usted necesita:
 
 ## Escenario de negocio
 
-El Tribunal Constitucional (TC) enfrenta un desafío crítico: cada vez que se publica un fallo controversial sobre temas sensibles como habeas corpus, amparo o inconstitucionalidad de leyes, el portal web experimenta saturación masiva de tráfico. Miles de ciudadanos, abogados, periodistas y académicos intentan acceder simultáneamente a los expedientes, causando caídas del sistema y negando el acceso a la justicia constitucional.
+El portal de consulta de expedientes constitucionales enfrenta un desafío crítico: cada vez que se publica un fallo controversial sobre temas sensibles como habeas corpus, amparo o inconstitucionalidad de leyes, el portal web experimenta saturación masiva de tráfico. Miles de ciudadanos, abogados, periodistas y académicos intentan acceder simultáneamente a los expedientes, causando caídas del sistema y negando el acceso a la justicia constitucional.
 
-Esta situación es inaceptable en un estado democrático de derecho. El acceso a la información judicial es un derecho fundamental que no puede depender de la capacidad de un solo servidor. Además, el TC debe garantizar que todos los ciudadanos, incluyendo personas con discapacidad visual, puedan consultar las resoluciones de manera accesible.
+Esta situación es inaceptable en un estado democrático de derecho. El acceso a la información judicial es un derecho fundamental que no puede depender de la capacidad de un solo servidor. Además, el portal debe garantizar que todos los ciudadanos, incluyendo personas con discapacidad visual, puedan consultar las resoluciones de manera accesible.
 
 Su misión es desplegar y validar una arquitectura de "Misión Crítica" que garantice:
 
@@ -99,7 +99,7 @@ La arquitectura que desplegará en este laboratorio integra múltiples servicios
 │                                 │   │                                 │
 │  ┌──────────────────────┐      │   │  ┌──────────────────────┐      │
 │  │  EC2 Instance        │      │   │  │  EC2 Instance        │      │
-│  │  Portal TC           │      │   │  │  Portal TC           │      │
+│  │  Portal Web        │      │   │  │  Portal Web        │      │
 │  └──────────────────────┘      │   │  └──────────────────────┘      │
 │           │                     │   │           │                     │
 │  ┌──────────────────────┐      │   │  ┌──────────────────────┐      │
@@ -143,7 +143,7 @@ La arquitectura que desplegará en este laboratorio integra múltiples servicios
 
 ```
 ┌──────────────────┐                    ┌──────────────────────────────┐
-│  EC2 Portal TC   │───API Call────────▶│  Amazon Bedrock              │
+│  EC2 Portal Web  │───API Call────────▶│  Amazon Bedrock              │
 │  Aplicación Web  │                    │  Asistente Constitucional    │
 └──────────────────┘                    │  (Modelo de IA Generativa)   │
         │                               └──────────────────────────────┘
@@ -187,7 +187,7 @@ Revise los diagramas de arquitectura presentados en la sección [Arquitectura de
 
 ### Paso 2: Lanzar la pila de CloudFormation
 
-Ahora desplegará toda la infraestructura del Portal del Tribunal Constitucional utilizando AWS CloudFormation. Este proceso automatizado creará más de 20 recursos de AWS en cuestión de minutos.
+Ahora desplegará toda la infraestructura del Portal del Ciudadano utilizando AWS CloudFormation. Este proceso automatizado creará más de 20 recursos de AWS en cuestión de minutos.
 
 1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `CloudFormation` y haga clic en el servicio **AWS CloudFormation** que aparece en los resultados.
 
@@ -270,7 +270,7 @@ CloudFormation determina automáticamente este orden leyendo las dependencias en
 
 9. Haga clic en el enlace **"Confirm subscription"** — esto abrirá una página web de AWS confirmando que su suscripción al tema SNS ha sido activada exitosamente.
 
-⚠️ **Advertencia crítica**: Si no confirma su suscripción de correo electrónico, **NO recibirá las alertas de tráfico** cuando el sistema detecte picos de actividad en el portal del Tribunal Constitucional. La confirmación es obligatoria para que Amazon SNS pueda enviarle notificaciones.
+⚠️ **Advertencia crítica**: Si no confirma su suscripción de correo electrónico, **NO recibirá las alertas de tráfico** cuando el sistema detecte picos de actividad en el portal. La confirmación es obligatoria para que Amazon SNS pueda enviarle notificaciones.
 
 **✓ Verificación**: Confirme que:
 - Los eventos de CloudFormation muestran múltiples recursos con estado **CREATE_COMPLETE**
@@ -282,9 +282,9 @@ CloudFormation determina automáticamente este orden leyendo las dependencias en
 
 ## Fase 2: Alta Disponibilidad y Seguridad (30 min)
 
-### Paso 4: Acceder al portal del TC
+### Paso 4: Acceder al portal
 
-Una vez que CloudFormation haya completado el despliegue de toda la infraestructura, accederá al Portal del Tribunal Constitucional a través de la URL del Application Load Balancer para confirmar que el sistema está funcionando correctamente.
+Una vez que CloudFormation haya completado el despliegue de toda la infraestructura, accederá al Portal del Ciudadano a través de la URL del Application Load Balancer para confirmar que el sistema está funcionando correctamente.
 
 1. En la consola de CloudFormation, asegúrese de que su pila `[Iniciales]-TC-Portal` esté seleccionada.
 
@@ -300,24 +300,24 @@ Una vez que CloudFormation haya completado el despliegue de toda la infraestruct
    - La URL tendrá un formato similar a: `http://[Iniciales]-TC-Portal-alb-1234567890.us-east-1.elb.amazonaws.com`
    - El enlace abrirá el portal en una nueva pestaña de su navegador
 
-6. Espere unos segundos mientras el navegador carga la página del Portal del Tribunal Constitucional.
+6. Espere unos segundos mientras el navegador carga la página del Portal del Ciudadano.
 
 7. Valide visualmente que la página principal del portal se carga correctamente:
-   - Debe ver el encabezado con el título "Portal del Ciudadano - Tribunal Constitucional"
+   - Debe ver el encabezado con el título "Portal del Ciudadano"
    - Debe ver la interfaz del portal con opciones de navegación
    - Debe ver enlaces a las secciones "Asistente Constitucional" y "Resoluciones"
 
 **✓ Verificación**: Confirme que:
 - La pila de CloudFormation muestra el estado **CREATE_COMPLETE**
 - La pestaña **Salidas** contiene la clave **PortalURL** con una URL válida
-- El portal del Tribunal Constitucional se carga correctamente en su navegador
+- El Portal del Ciudadano se carga correctamente en su navegador
 - La interfaz del portal muestra el branding institucional y las opciones de navegación
 
 **💡 Tip del instructor**: El Application Load Balancer que acaba de utilizar está distribuyendo automáticamente el tráfico entre dos instancias EC2 ubicadas en diferentes zonas de disponibilidad. Aunque usted solo ve una URL, detrás de escena hay dos servidores web trabajando en paralelo para garantizar alta disponibilidad. Además, antes de que el tráfico llegue al ALB, AWS WAF inspecciona cada solicitud HTTP para bloquear ataques web comunes. En el siguiente paso, inspeccionará esta capa de seguridad perimetral.
 
 ### Paso 5: Inspeccionar AWS WAF
 
-Ahora inspeccionará la capa de seguridad perimetral del Portal del Tribunal Constitucional. AWS WAF (Web Application Firewall) actúa como un escudo que filtra todo el tráfico HTTP antes de que llegue al Application Load Balancer, bloqueando automáticamente patrones de ataque comunes.
+Ahora inspeccionará la capa de seguridad perimetral del Portal del Ciudadano. AWS WAF (Web Application Firewall) actúa como un escudo que filtra todo el tráfico HTTP antes de que llegue al Application Load Balancer, bloqueando automáticamente patrones de ataque comunes.
 
 1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `WAF` y haga clic en el servicio **AWS WAF** que aparece en los resultados.
 
@@ -339,7 +339,7 @@ Ahora inspeccionará la capa de seguridad perimetral del Portal del Tribunal Con
 
 **💡 Tip del instructor - Seguridad perimetral automática:**
 
-AWS WAF actúa como un escudo de seguridad que inspecciona cada solicitud HTTP antes de que llegue al portal del Tribunal Constitucional. Cada vez que un ciudadano, abogado o periodista accede al portal, WAF analiza la solicitud buscando patrones de ataque conocidos y bloquea automáticamente las solicitudes maliciosas sin que el equipo de desarrollo tenga que escribir código de seguridad personalizado.
+AWS WAF actúa como un escudo de seguridad que inspecciona cada solicitud HTTP antes de que llegue al Portal del Ciudadano. Cada vez que un ciudadano, abogado o periodista accede al portal, WAF analiza la solicitud buscando patrones de ataque conocidos y bloquea automáticamente las solicitudes maliciosas sin que el equipo de desarrollo tenga que escribir código de seguridad personalizado.
 
 El grupo de reglas administrado **AWSManagedRulesCommonRuleSet** es mantenido y actualizado continuamente por expertos de seguridad de AWS. Esto significa que cuando se descubren nuevas vulnerabilidades o técnicas de ataque, AWS actualiza las reglas automáticamente para proteger su portal sin que usted tenga que hacer nada.
 
@@ -356,7 +356,7 @@ Ahora realizará una prueba crítica de alta disponibilidad: terminará delibera
 
 2. En el panel de navegación de la izquierda, haga clic en **Instancias**.
 
-3. En la lista de instancias, identifique las dos instancias EC2 del Portal del Tribunal Constitucional:
+3. En la lista de instancias, identifique las dos instancias EC2 del Portal del Ciudadano:
    - Ambas instancias tendrán nombres que incluyen su pila de CloudFormation (por ejemplo, `[Iniciales]-TC-Portal-...`)
    - Observe la columna **Zona de disponibilidad** — confirme que las dos instancias están en zonas de disponibilidad diferentes
    - Por ejemplo, una instancia puede estar en `us-east-1a` y la otra en `us-east-1b`
@@ -372,7 +372,7 @@ Ahora realizará una prueba crítica de alta disponibilidad: terminará delibera
    - La instancia comenzará el proceso de terminación inmediatamente
    - El estado de la instancia cambiará a **Shutting down** (Apagándose) y luego a **Terminated** (Terminada)
 
-8. **Inmediatamente** después de terminar la instancia, regrese a la pestaña de su navegador donde tiene abierto el Portal del Tribunal Constitucional.
+8. **Inmediatamente** después de terminar la instancia, regrese a la pestaña de su navegador donde tiene abierto el Portal del Ciudadano.
 
 9. Refresque la página del portal múltiples veces (presione F5 o haga clic en el botón de actualizar del navegador).
 
@@ -394,7 +394,7 @@ Ahora realizará una prueba crítica de alta disponibilidad: terminará delibera
 **✓ Verificación**: Confirme que:
 - Identificó correctamente las dos instancias EC2 en diferentes zonas de disponibilidad
 - Terminó exitosamente una de las instancias (estado **Terminated**)
-- El portal del TC continuó funcionando sin interrupciones después de terminar la instancia
+- El portal continuó funcionando sin interrupciones después de terminar la instancia
 - El Auto Scaling Group lanzó automáticamente una nueva instancia de reemplazo
 - La nueva instancia transicionó de **Pending** a **Running**
 - Ahora tiene nuevamente dos instancias en estado **Running** en diferentes zonas de disponibilidad
@@ -404,17 +404,17 @@ Ahora realizará una prueba crítica de alta disponibilidad: terminará delibera
 2. **Multi-AZ**: Las instancias están en centros de datos físicamente separados — si un centro de datos completo falla, el otro continúa operando
 3. **Auto Scaling Group**: Monitorea constantemente la capacidad y reemplaza instancias fallidas sin intervención humana
 
-Esta arquitectura garantiza que el Portal del Tribunal Constitucional permanezca accesible 24/7, incluso durante fallos de hardware, mantenimiento de infraestructura o picos masivos de tráfico.
+Esta arquitectura garantiza que el Portal del Ciudadano permanezca accesible 24/7, incluso durante fallos de hardware, mantenimiento de infraestructura o picos masivos de tráfico.
 
 ### Paso 7: Inspeccionar RDS Multi-AZ y Secrets Manager
 
-Ahora inspeccionará la configuración de la base de datos relacional del Portal del Tribunal Constitucional para comprender cómo el diseño Multi-AZ protege los datos críticos contra fallos masivos de infraestructura, y cómo AWS Secrets Manager gestiona las credenciales de la base de datos de forma segura y automatizada.
+Ahora inspeccionará la configuración de la base de datos relacional del Portal del Ciudadano para comprender cómo el diseño Multi-AZ protege los datos críticos contra fallos masivos de infraestructura, y cómo AWS Secrets Manager gestiona las credenciales de la base de datos de forma segura y automatizada.
 
 1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `RDS` y haga clic en el servicio **Amazon RDS** que aparece en los resultados.
 
 2. En el panel de navegación de la izquierda, haga clic en **Bases de datos**.
 
-3. En la lista de bases de datos, localice y seleccione la instancia de base de datos creada para el Portal del Tribunal Constitucional:
+3. En la lista de bases de datos, localice y seleccione la instancia de base de datos creada para el Portal del Ciudadano:
    - El nombre de la base de datos incluirá su pila de CloudFormation (por ejemplo, `[Iniciales]-TC-Portal-db-...`)
    - Haga clic en el nombre de la base de datos para abrir sus detalles
 
@@ -426,15 +426,15 @@ Ahora inspeccionará la configuración de la base de datos relacional del Portal
 
 **💡 Tip del instructor - Tolerancia a fallos de datos críticos:**
 
-Lo que acaba de confirmar es una de las configuraciones más importantes para sistemas de misión crítica. La base de datos RDS Multi-AZ mantiene una réplica síncrona de todos los datos del Tribunal Constitucional en un centro de datos físicamente separado.
+Lo que acaba de confirmar es una de las configuraciones más importantes para sistemas de misión crítica. La base de datos RDS Multi-AZ mantiene una réplica síncrona de todos los datos del portal en un centro de datos físicamente separado.
 
-Esto significa que si el centro de datos primario de AWS sufre un corte de energía masivo, un desastre natural o cualquier fallo catastrófico de infraestructura, **el Tribunal Constitucional no pierde ni un solo expediente**. La réplica síncrona en la otra instalación física contiene una copia exacta y actualizada de todos los datos.
+Esto significa que si el centro de datos primario de AWS sufre un corte de energía masivo, un desastre natural o cualquier fallo catastrófico de infraestructura, **el portal no pierde ni un solo expediente**. La réplica síncrona en la otra instalación física contiene una copia exacta y actualizada de todos los datos.
 
 **Failover automático sin intervención humana:**
 
 Si la base de datos primaria falla, AWS detecta automáticamente el problema y redirige todo el tráfico de base de datos a la réplica en la otra zona de disponibilidad. Este proceso de failover toma típicamente entre 60 y 120 segundos y ocurre sin que los administradores del sistema tengan que hacer nada manualmente.
 
-Durante esos 1-2 minutos, las aplicaciones pueden experimentar errores de conexión temporales, pero una vez completado el failover, el portal del TC continúa operando normalmente con la réplica promovida como nueva base de datos primaria.
+Durante esos 1-2 minutos, las aplicaciones pueden experimentar errores de conexión temporales, pero una vez completado el failover, el portal continúa operando normalmente con la réplica promovida como nueva base de datos primaria.
 
 **Diferencia con el Auto Scaling de EC2:**
 
@@ -467,7 +467,7 @@ Ahora verificará cómo se gestionan las credenciales de la base de datos de for
 
 AWS Secrets Manager resuelve un problema crítico de seguridad en la gestión de credenciales. Tradicionalmente, las contraseñas de bases de datos se almacenaban en archivos de configuración, variables de entorno o incluso directamente en el código fuente — prácticas que representan un riesgo de seguridad significativo.
 
-Con Secrets Manager integrado en la arquitectura del Tribunal Constitucional:
+Con Secrets Manager integrado en la arquitectura del portal:
 - La contraseña de la base de datos se **genera automáticamente** durante el despliegue, sin intervención humana
 - La contraseña se **almacena cifrada** en AWS Secrets Manager, no en texto plano
 - La contraseña puede **rotarse periódicamente** sin modificar el código de la aplicación ni la plantilla de CloudFormation
@@ -477,7 +477,7 @@ Con Secrets Manager integrado en la arquitectura del Tribunal Constitucional:
 La plantilla de Infraestructura como Código utiliza la referencia dinámica `resolve:secretsmanager` de CloudFormation para inyectar la contraseña en la base de datos RDS en tiempo de despliegue. Esto significa que el valor real de la contraseña nunca aparece en la plantilla YAML — CloudFormation resuelve la referencia automáticamente al momento de crear los recursos.
 
 **✓ Verificación**: Confirme que:
-- Localizó correctamente la instancia de base de datos RDS del Portal del TC
+- Localizó correctamente la instancia de base de datos RDS del portal
 - La pestaña **Configuración** muestra el campo **Multi-AZ** con valor **Sí**
 - Comprende que existe una réplica síncrona en otra zona de disponibilidad
 - Comprende que el failover automático ocurre sin intervención manual en caso de fallo
@@ -487,7 +487,7 @@ La plantilla de Infraestructura como Código utiliza la referencia dinámica `re
 
 ### Paso 8: Inspeccionar roles IAM
 
-Ahora inspeccionará los roles de IAM (Identity and Access Management) creados por la pila de CloudFormation para comprender cómo se aplica el principio de mínimo privilegio en la arquitectura del Portal del Tribunal Constitucional. Cada servicio recibe únicamente los permisos que necesita para realizar su función específica.
+Ahora inspeccionará los roles de IAM (Identity and Access Management) creados por la pila de CloudFormation para comprender cómo se aplica el principio de mínimo privilegio en la arquitectura del Portal del Ciudadano. Cada servicio recibe únicamente los permisos que necesita para realizar su función específica.
 
 1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `IAM` y haga clic en el servicio **IAM** que aparece en los resultados.
 
@@ -543,7 +543,7 @@ Las instancias EC2 acceden a Amazon Bedrock y Amazon Polly a través del rol IAM
 
 ### Paso 9: Publicar mensaje en SNS
 
-Ahora iniciará el flujo de eventos automatizado del Portal del Tribunal Constitucional publicando un mensaje que simula la emisión de un nuevo fallo judicial. Este mensaje viajará automáticamente a través de la arquitectura orientada a eventos (SNS → SQS → Lambda) sin intervención manual.
+Ahora iniciará el flujo de eventos automatizado del Portal del Ciudadano publicando un mensaje que simula la emisión de un nuevo fallo judicial. Este mensaje viajará automáticamente a través de la arquitectura orientada a eventos (SNS → SQS → Lambda) sin intervención manual.
 
 1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `SNS` y haga clic en el servicio **Amazon SNS** que aparece en los resultados.
 
@@ -586,7 +586,7 @@ Ninguno de estos destinos requirió que usted configurara manualmente la entrega
 
 ### Paso 10: Inspeccionar cola SQS y concepto de buffer
 
-Ahora inspeccionará la cola de mensajes de Amazon SQS para comprender cómo actúa como un amortiguador (buffer) que protege la infraestructura del Tribunal Constitucional contra picos masivos de procesamiento.
+Ahora inspeccionará la cola de mensajes de Amazon SQS para comprender cómo actúa como un amortiguador (buffer) que protege la infraestructura del portal contra picos masivos de procesamiento.
 
 1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `SQS` y haga clic en el servicio **Amazon SQS** que aparece en los resultados.
 
@@ -606,7 +606,7 @@ Esta es otra ventaja de la Infraestructura como Código: las relaciones entre se
 
 **💡 Tip del instructor - Concepto de buffer para protección contra picos:**
 
-Imagine el siguiente escenario crítico: el Tribunal Constitucional emite un fallo histórico sobre un tema controversial y publica simultáneamente **1,000 expedientes** relacionados con el caso. Si el sistema intentara procesar todos esos expedientes inmediatamente enviándolos directamente al servidor web o a la base de datos, la infraestructura colapsaría bajo la carga masiva.
+Imagine el siguiente escenario crítico: el portal emite un fallo histórico sobre un tema controversial y publica simultáneamente **1,000 expedientes** relacionados con el caso. Si el sistema intentara procesar todos esos expedientes inmediatamente enviándolos directamente al servidor web o a la base de datos, la infraestructura colapsaría bajo la carga masiva.
 
 Aquí es donde Amazon SQS actúa como un amortiguador inteligente:
 
@@ -710,7 +710,7 @@ Esta arquitectura es fundamental para sistemas modernos de misión crítica porq
 - **Escala automáticamente**: Lambda procesa más mensajes en paralelo cuando la demanda aumenta
 - **Proporciona observabilidad**: CloudWatch Logs registra toda la actividad para auditoría y debugging
 
-El Tribunal Constitucional ahora puede publicar miles de expedientes simultáneamente con la confianza de que todos serán procesados de manera ordenada, confiable y auditable.
+El portal ahora puede publicar miles de expedientes simultáneamente con la confianza de que todos serán procesados de manera ordenada, confiable y auditable.
 
 ---
 
@@ -720,7 +720,7 @@ El Tribunal Constitucional ahora puede publicar miles de expedientes simultánea
 
 Ahora interactuará con el asistente constitucional impulsado por Inteligencia Artificial Generativa para comprobar cómo Amazon Bedrock puede traducir términos jurídicos complejos a un lenguaje sencillo que cualquier ciudadano pueda comprender.
 
-1. Regrese a la pestaña de su navegador donde tiene abierto el Portal del Tribunal Constitucional.
+1. Regrese a la pestaña de su navegador donde tiene abierto el Portal del Ciudadano.
    - Si cerró la pestaña, puede volver a abrir el portal usando la URL del Application Load Balancer que obtuvo en el Paso 4 (pestaña **Salidas** de CloudFormation)
 
 2. En la página principal del portal, localice y haga clic en el enlace o botón de navegación que dice **"Asistente Constitucional"** o **"Chatbot"**.
@@ -763,12 +763,12 @@ Lo que acaba de experimentar involucra varios pasos técnicos que ocurren en tie
 
 Todo este flujo ocurre en cuestión de segundos, proporcionando una experiencia interactiva fluida para el ciudadano.
 
-**Ventajas de Amazon Bedrock para el Tribunal Constitucional:**
+**Ventajas de Amazon Bedrock para el Portal del Ciudadano:**
 
-- **Sin entrenar modelos**: No es necesario que el TC entrene sus propios modelos de IA desde cero — puede usar modelos fundacionales pre-entrenados
+- **Sin entrenar modelos**: No es necesario entrenar modelos de IA desde cero — puede usar modelos fundacionales pre-entrenados
 - **Lenguaje natural**: Los ciudadanos pueden hacer preguntas en español coloquial y recibir respuestas comprensibles
 - **Escalabilidad**: Bedrock escala automáticamente para atender miles de consultas simultáneas durante fallos de alto perfil
-- **Actualización continua**: Los modelos fundacionales se actualizan regularmente con nuevos conocimientos sin intervención del TC
+- **Actualización continua**: Los modelos fundacionales se actualizan regularmente con nuevos conocimientos sin intervención del equipo
 - **Democratización del acceso**: Ciudadanos sin conocimientos legales pueden comprender conceptos constitucionales complejos
 
 **✓ Verificación**: Confirme que:
@@ -782,7 +782,7 @@ Todo este flujo ocurre en cuestión de segundos, proporcionando una experiencia 
 
 Lo que acaba de probar tiene un impacto profundo en la democratización del acceso a la justicia. Históricamente, los documentos legales y constitucionales han sido inaccesibles para ciudadanos comunes debido al lenguaje técnico y la complejidad jurídica.
 
-Con un asistente de IA integrado en el portal del Tribunal Constitucional:
+Con un asistente de IA integrado en el Portal del Ciudadano:
 - Un ciudadano puede preguntar "¿Qué es un habeas corpus?" y recibir una explicación simple
 - Un estudiante puede consultar "¿Cuándo puedo presentar un amparo?" sin necesidad de contratar un abogado
 - Un periodista puede entender rápidamente las implicaciones de un fallo constitucional complejo
@@ -791,9 +791,9 @@ Esta tecnología no reemplaza el asesoramiento legal profesional, pero reduce si
 
 ### Paso 13: Síntesis de voz con Amazon Polly
 
-Ahora comprobará cómo el Portal del Tribunal Constitucional cumple con las regulaciones de inclusión y accesibilidad para ciudadanos con discapacidad visual mediante la síntesis de voz con Amazon Polly.
+Ahora comprobará cómo el Portal del Ciudadano cumple con las regulaciones de inclusión y accesibilidad para ciudadanos con discapacidad visual mediante la síntesis de voz con Amazon Polly.
 
-1. En el Portal del Tribunal Constitucional, localice y haga clic en el enlace o botón de navegación que dice **"Resoluciones"** o **"Últimos Fallos"**.
+1. En el Portal del Ciudadano, localice y haga clic en el enlace o botón de navegación que dice **"Resoluciones"** o **"Últimos Fallos"**.
    - Esto lo llevará a la sección donde se publican las resoluciones judiciales
 
 2. En la sección de resoluciones, localice una resolución de ejemplo precargada que contiene un bloque de texto con el resumen de una sentencia.
@@ -826,7 +826,7 @@ Ahora comprobará cómo el Portal del Tribunal Constitucional cumple con las reg
 
 Lo que acaba de experimentar es el cumplimiento de las regulaciones de accesibilidad e inclusión para personas con discapacidad visual. Muchos países tienen leyes que requieren que los portales gubernamentales proporcionen alternativas de audio para contenido textual.
 
-Con Amazon Polly integrado en el Portal del Tribunal Constitucional:
+Con Amazon Polly integrado en el Portal del Ciudadano:
 - **Ciudadanos con discapacidad visual** pueden escuchar las resoluciones judiciales en lugar de depender de lectores de pantalla genéricos
 - **Ciudadanos con dislexia** pueden beneficiarse de la lectura en voz alta para mejorar la comprensión
 - **Ciudadanos con bajo nivel de alfabetización** pueden acceder a la información judicial de manera más efectiva
@@ -861,7 +861,7 @@ Con Amazon Polly integrado en el Portal del Tribunal Constitucional:
 
 **💡 Tip del instructor - Impacto en accesibilidad:**
 
-El Tribunal Constitucional ahora cumple con las regulaciones de inclusión para ciudadanos con discapacidad visual. Esto no es solo un requisito legal — es un imperativo ético en una democracia moderna.
+El Portal del Ciudadano ahora cumple con las regulaciones de inclusión para ciudadanos con discapacidad visual. Esto no es solo un requisito legal — es un imperativo ético en una democracia moderna.
 
 Antes de esta integración, una persona con discapacidad visual dependía de:
 - Lectores de pantalla genéricos que pueden tener dificultades con terminología legal

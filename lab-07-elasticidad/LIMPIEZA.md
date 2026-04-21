@@ -1,6 +1,6 @@
-# Limpieza de Recursos - Laboratorio 8
+# Limpieza de Recursos - Laboratorio 7
 
-Esta guía le ayudará a eliminar todos los recursos creados durante el laboratorio del Portal del Ciudadano del Tribunal Constitucional.
+Esta guía le ayudará a eliminar todos los recursos creados durante el laboratorio del Portal del Ciudadano.
 
 ---
 

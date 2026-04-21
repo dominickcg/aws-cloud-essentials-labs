@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Portal del Ciudadano - Tribunal Constitucional - Arquitectura de Alta Disponibilidad con IA
+Description: Portal del Ciudadano - Arquitectura de Alta Disponibilidad con IA
 
 Parameters:
   EmailAlerts:
@@ -91,7 +91,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub '${AWS::StackName}-sg-web'
-      GroupDescription: Security group para instancias web del Portal TC
+      GroupDescription: Security group para instancias web del portal
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -171,13 +171,12 @@ Resources:
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Portal del Ciudadano - Tribunal Constitucional</title>
+                <title>Portal del Ciudadano</title>
                 <link rel="stylesheet" href="css/styles.css">
             </head>
             <body>
                 <header>
                     <h1>🏛️ Portal del Ciudadano</h1>
-                    <h2>Tribunal Constitucional</h2>
                 </header>
                 <nav>
                     <ul>
@@ -205,7 +204,7 @@ Resources:
                     </section>
                 </main>
                 <footer>
-                    <p>&copy; 2026 Tribunal Constitucional - Portal del Ciudadano</p>
+                    <p>&copy; 2026 Portal del Ciudadano</p>
                 </footer>
             </body>
             </html>
@@ -439,13 +438,12 @@ Resources:
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Asistente Constitucional - Portal TC</title>
+                <title>Asistente Constitucional - Portal del Ciudadano</title>
                 <link rel="stylesheet" href="css/styles.css">
             </head>
             <body>
                 <header>
                     <h1>🏛️ Portal del Ciudadano</h1>
-                    <h2>Tribunal Constitucional</h2>
                 </header>
                 <nav>
                     <ul>
@@ -470,7 +468,7 @@ Resources:
                     </div>
                 </main>
                 <footer>
-                    <p>&copy; 2026 Tribunal Constitucional - Portal del Ciudadano</p>
+                    <p>&copy; 2026 Portal del Ciudadano</p>
                 </footer>
                 <script src="js/chatbot.js"></script>
             </body>
@@ -484,13 +482,12 @@ Resources:
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Resoluciones - Portal TC</title>
+                <title>Resoluciones - Portal del Ciudadano</title>
                 <link rel="stylesheet" href="css/styles.css">
             </head>
             <body>
                 <header>
                     <h1>🏛️ Portal del Ciudadano</h1>
-                    <h2>Tribunal Constitucional</h2>
                 </header>
                 <nav>
                     <ul>
@@ -504,7 +501,7 @@ Resources:
                         <h3>Últimas Resoluciones</h3>
                         <h4>Expediente N° 001-2026 - Habeas Corpus</h4>
                         <div class="resolucion-text" id="resolucionText">
-                            <p>El Tribunal Constitucional, en sesión de Pleno Jurisdiccional, ha resuelto declarar FUNDADO el recurso de Habeas Corpus interpuesto por el ciudadano en defensa de su libertad individual. Se ha determinado que existió una vulneración al derecho fundamental a la libertad personal consagrado en el artículo 2 inciso 24 de la Constitución Política. En consecuencia, se ordena la inmediata libertad del recurrente y se dispone que las autoridades competentes adopten las medidas necesarias para garantizar el pleno ejercicio de sus derechos constitucionales.</p>
+                            <p>En sesión de Pleno Jurisdiccional, se ha resuelto declarar FUNDADO el recurso de Habeas Corpus interpuesto por el ciudadano en defensa de su libertad individual. Se ha determinado que existió una vulneración al derecho fundamental a la libertad personal consagrado en el artículo 2 inciso 24 de la Constitución Política. En consecuencia, se ordena la inmediata libertad del recurrente y se dispone que las autoridades competentes adopten las medidas necesarias para garantizar el pleno ejercicio de sus derechos constitucionales.</p>
                         </div>
                         <div class="audio-controls">
                             <button class="btn" onclick="playAudio()">▶ Escuchar Resumen</button>
@@ -513,7 +510,7 @@ Resources:
                     </div>
                 </main>
                 <footer>
-                    <p>&copy; 2026 Tribunal Constitucional - Portal del Ciudadano</p>
+                    <p>&copy; 2026 Portal del Ciudadano</p>
                 </footer>
                 <script src="js/polly.js"></script>
             </body>
@@ -652,7 +649,7 @@ Resources:
             {
               "name": "tc-backend",
               "version": "1.0.0",
-              "description": "Backend API del Portal del Tribunal Constitucional",
+              "description": "Backend API del Portal del Ciudadano",
               "main": "server.js",
               "dependencies": {
                 "@aws-sdk/client-bedrock-runtime": "^3.0.0",
@@ -665,7 +662,7 @@ Resources:
             
             # Crear servidor Express
             cat > /opt/tc-backend/server.js << 'SERVEREOF'
-            // Servidor backend del Portal del Tribunal Constitucional
+            // Servidor backend del Portal del Ciudadano
             // Provee endpoints para integración con Amazon Bedrock y Amazon Polly
             
             var express = require('express');
@@ -682,7 +679,7 @@ Resources:
             var pollyClient = new Polly.PollyClient({});
             
             // Prompt de contexto constitucional para el asistente de IA
-            var SYSTEM_PROMPT = 'Eres un asistente legal del Tribunal Constitucional. ' +
+            var SYSTEM_PROMPT = 'Eres un asistente legal constitucional. ' +
               'Tu función es explicar conceptos constitucionales en lenguaje sencillo ' +
               'para que cualquier ciudadano pueda entenderlos. ' +
               'Responde siempre en español, de forma clara y concisa. ' +
@@ -761,7 +758,7 @@ Resources:
             // Iniciar el servidor en puerto 3001
             var PORT = 3001;
             app.listen(PORT, function() {
-              console.log('Backend del Portal TC ejecutándose en puerto ' + PORT);
+              console.log('Backend del Portal del Ciudadano ejecutándose en puerto ' + PORT);
             });
             SERVEREOF
             
@@ -771,7 +768,7 @@ Resources:
             # Crear servicio systemd para el backend
             cat > /etc/systemd/system/tc-backend.service << 'EOF'
             [Unit]
-            Description=Backend API del Portal del Tribunal Constitucional
+            Description=Backend API del Portal del Ciudadano
             After=network.target
             
             [Service]
@@ -884,7 +881,7 @@ Resources:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupName: !Sub '${AWS::StackName}-db-subnet-group'
-      DBSubnetGroupDescription: Subnet group para RDS Multi-AZ del Portal TC
+      DBSubnetGroupDescription: Subnet group para RDS Multi-AZ del portal
       SubnetIds:
         - !Ref PublicSubnetA
         - !Ref PublicSubnetB
@@ -919,7 +916,7 @@ Resources:
     Type: AWS::SecretsManager::Secret
     Properties:
       Name: !Sub '${AWS::StackName}-rds-secret'
-      Description: Credenciales de la base de datos RDS del Portal TC
+      Description: Credenciales de la base de datos RDS del portal
       GenerateSecretString:
         SecretStringTemplate: '{"username": "admin"}'
         GenerateStringKey: 'password'
@@ -933,7 +930,7 @@ Resources:
     Type: AWS::SNS::Topic
     Properties:
       TopicName: !Sub '${AWS::StackName}-alertas'
-      DisplayName: Alertas de Resoluciones del Tribunal Constitucional
+      DisplayName: Alertas de Resoluciones del Portal del Ciudadano
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-alertas'
@@ -1110,7 +1107,7 @@ Resources:
     Properties:
       Name: !Sub '${AWS::StackName}-waf-acl'
       Scope: REGIONAL
-      Description: Web ACL para proteger el Portal del Tribunal Constitucional
+      Description: Web ACL para proteger el Portal del Ciudadano
       DefaultAction:
         Allow: {}
       VisibilityConfig:
@@ -1143,7 +1140,7 @@ Resources:
 
 Outputs:
   PortalURL:
-    Description: URL del Application Load Balancer para acceder al Portal TC
+    Description: URL del Application Load Balancer para acceder al portal
     Value: !Sub 'http://${ApplicationLoadBalancer.DNSName}'
     Export:
       Name: !Sub '${AWS::StackName}-PortalURL'

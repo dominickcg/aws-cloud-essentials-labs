@@ -1,6 +1,6 @@
-# Guía de Solución de Problemas - Laboratorio 8
+# Guía de Solución de Problemas - Laboratorio 7
 
-Esta guía contiene soluciones a los errores más comunes que pueden presentarse durante el laboratorio del Portal del Ciudadano del Tribunal Constitucional.
+Esta guía contiene soluciones a los errores más comunes que pueden presentarse durante el laboratorio del Portal del Ciudadano.
 
 ---
 
