@@ -98,7 +98,6 @@ Antes de comenzar, es útil conocer los servicios de AWS que utilizará en este 
 
 - User Data ejecuta comandos como root al iniciar la instancia. Solo incluya scripts de prueba o configuración inicial.
 - El puerto SSH (22) puede cerrarse después del laboratorio para mayor seguridad si no necesita acceso remoto.
-- ⚠️ **Importante**: Esta instancia se utilizará como base en el Laboratorio 4. NO la elimine al finalizar este laboratorio si planea continuar con los laboratorios posteriores.
 
 ## Solución de problemas
 
