@@ -40,7 +40,7 @@ Antes de comenzar con los laboratorios, asegúrese de cumplir con los siguientes
 | Laboratorio | Título | Descripción | Tiempo Estimado |
 |-------------|--------|-------------|-----------------|
 | [Lab 01](./lab-01-computo-ec2/) | Servidor Web en EC2 | Lance una instancia EC2 y configure un servidor web Apache con contenido personalizado usando User Data | 30-45 min |
-| [Lab 02](./lab-02-redes-vpc/) | Networking con VPC | Construya una arquitectura de red con VPC, subredes públicas y privadas, tablas de enrutamiento, Security Groups y NACLs | 50-60 min |
+| [Lab 02](./lab-02-redes-vpc/) | Networking con VPC | Construya una arquitectura de red con VPC, subredes públicas y privadas, tablas de enrutamiento, Security Groups y NACLs | 40-50 min |
 | [Lab 03](./lab-03-almacenamiento-s3/) | Sitio Web Estático en S3 | Implemente un sitio web estático en Amazon S3 con hosting web y políticas de acceso público | 30-40 min |
 | [Lab 04](./lab-04-base-de-datos-rds/) | Página Web Dinámica con RDS | Integre una aplicación web PHP con una base de datos MySQL en Amazon RDS | 50-65 min |
 | [Lab 05](./lab-05-seguridad-gobernanza/) | Seguridad, Identidad y Gobernanza | Gestione identidades con IAM, detecte amenazas con GuardDuty y audite actividad con CloudTrail | 60 min |

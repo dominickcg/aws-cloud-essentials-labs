@@ -8,7 +8,7 @@
 - [Arquitectura del laboratorio](#arquitectura-del-laboratorio)
 - [Recursos compartidos](#recursos-compartidos)
 - [Paso 1: Verificar región AWS](#paso-1-verificar-region-aws)
-- [Parte 2: Crear recursos compartidos (solo instructor)](#parte-2-crear-recursos-compartidos-solo-instructor)
+- [Parte 2: Verificar recursos compartidos](#parte-2-verificar-recursos-compartidos)
 - [Parte 3: Crear subredes](#parte-3-crear-subredes)
 - [Parte 4: Crear tablas de enrutamiento](#parte-4-crear-tablas-de-enrutamiento)
 - [Parte 5: Crear Security Group](#parte-5-crear-security-group)
@@ -28,7 +28,7 @@
 
 ## Tiempo estimado
 
-50-60 minutos
+40-50 minutos
 
 ## Prerrequisitos
 
@@ -67,15 +67,17 @@
 
 ## Recursos compartidos
 
-Los siguientes recursos serán creados por el instructor durante el desarrollo del laboratorio. Una vez creados, serán utilizados por todos los participantes. **NO los modifique ni elimine.**
+Los siguientes recursos fueron creados previamente por el instructor y están disponibles para todos los participantes. **NO los modifique ni elimine.**
 
 | Recurso | Nombre | Descripción |
 |---------|--------|-------------|
 | VPC | `vpc-lab2` | VPC principal con CIDR 10.0.0.0/16 - **Recurso compartido - NO modificar** |
 | Internet Gateway | `igw-lab2` | Conecta la VPC a internet - **Recurso compartido - NO modificar** |
 | NAT Gateway | `nat-lab2` | Permite salida a internet desde subredes privadas - **Recurso compartido - NO modificar** |
+| Subred del NAT | `subnet-nat-lab2` | Subred pública donde reside el NAT Gateway (CIDR `10.0.0.0/24`) - **Recurso compartido - NO modificar** |
+| Tabla de enrutamiento del NAT | `rt-nat-lab2` | Tabla de enrutamiento asociada a `subnet-nat-lab2` - **Recurso compartido - NO modificar** |
 
-> ⚠️ **Recurso compartido - NO modificar**. Solo el instructor crea estos recursos.
+> ⚠️ **Recurso compartido - NO modificar**. Estos recursos fueron desplegados por el instructor antes del laboratorio.
 
 ---
 
@@ -88,159 +90,23 @@ Los siguientes recursos serán creados por el instructor durante el desarrollo d
 
 ---
 
-## Parte 2: Crear recursos compartidos (solo instructor)
+## Parte 2: Verificar recursos compartidos
 
-> ⚠️ **Esta sección la ejecuta ÚNICAMENTE el instructor.** Los participantes deben observar el proceso y esperar a que el instructor confirme que los recursos están listos antes de continuar con la Parte 3.
+El instructor ha desplegado previamente los recursos de red compartidos que utilizará en este laboratorio. Antes de continuar, verifique que todos los recursos están disponibles y operativos.
 
-2. Utilice la barra de búsqueda global (parte superior) y escriba **VPC**. Haga clic en el servicio **VPC**.
+Los recursos compartidos incluyen:
 
-### 1.1 Crear la VPC
+| Recurso | Nombre | Configuración |
+|---------|--------|---------------|
+| VPC | `vpc-lab2` | CIDR `10.0.0.0/16`, nombres de host DNS habilitados |
+| Internet Gateway | `igw-lab2` | Asociado a `vpc-lab2` |
+| Subred del NAT | `subnet-nat-lab2` | CIDR `10.0.0.0/24`, IP pública automática habilitada |
+| Tabla de enrutamiento del NAT | `rt-nat-lab2` | Ruta `0.0.0.0/0` → `igw-lab2`, asociada a `subnet-nat-lab2` |
+| NAT Gateway | `nat-lab2` | Ubicado en `subnet-nat-lab2`, con Elastic IP asignada |
 
-Una VPC (Virtual Private Cloud) es una red virtual aislada dentro de AWS donde se desplegarán todos los recursos del laboratorio.
+> Una VPC (Virtual Private Cloud) es una red virtual aislada dentro de AWS donde se desplegarán todos los recursos del laboratorio. El Internet Gateway permite la comunicación con internet, y el NAT Gateway permite que las instancias en subredes privadas accedan a internet sin ser accesibles desde el exterior.
 
-> ⚠️ **Recurso compartido - NO modificar**. Solo el instructor crea este recurso.
-
-1. En el panel de navegación de la izquierda, haga clic en **Sus VPCs**.
-
-2. Haga clic en el botón naranja **Crear VPC**.
-
-3. Configure los siguientes parámetros:
-   - **Recursos a crear**: Solo la VPC
-   - **Etiqueta de nombre**: `vpc-lab2`
-   - **Bloque de CIDR IPv4**: Entrada manual de CIDR IPv4
-   - **CIDR IPv4**: `10.0.0.0/16`
-   - **Bloque de CIDR IPv6**: Ningún bloque de CIDR IPv6
-   - **Tenencia**: Predeterminada
-
-4. Haga clic en **Crear VPC**.
-
-**✓ Verificación**: La VPC `vpc-lab2` aparece en la lista con:
-- Estado **Disponible**
-- Bloque CIDR IPv4 `10.0.0.0/16`
-
-5. Seleccione la VPC `vpc-lab2`.
-
-6. Haga clic en **Acciones → Editar la configuración de la VPC**.
-
-7. En la sección **Configuración de DNS**, marque las casillas:
-   - **Habilitar nombres de host de DNS**
-   - **Habilitar resolución de DNS** (debería estar habilitada por defecto)
-
-8. Haga clic en **Guardar**.
-
-> Habilitar los nombres de host DNS permite que las instancias EC2 dentro de la VPC reciban nombres DNS públicos cuando se les asigna una IP pública.
-
-### 1.2 Crear y asociar el Internet Gateway
-
-Un Internet Gateway permite la comunicación entre los recursos de la VPC y el internet.
-
-> ⚠️ **Recurso compartido - NO modificar**. Solo el instructor crea este recurso.
-
-1. En el panel de navegación de la izquierda, haga clic en **Gateways de Internet**.
-
-2. Haga clic en **Crear gateway de Internet**.
-
-3. Configure los siguientes parámetros:
-   - **Etiqueta de nombre**: `igw-lab2`
-
-4. Haga clic en **Crear gateway de Internet**.
-
-5. En la página del gateway recién creado, haga clic en **Acciones → Asociar a VPC**.
-
-6. Seleccione `vpc-lab2` y haga clic en **Asociar gateway de Internet**.
-
-**✓ Verificación**: El Internet Gateway `igw-lab2` muestra:
-- Estado **Attached**
-- Asociado a `vpc-lab2`
-
-### 1.3 Crear subred para el NAT Gateway
-
-El NAT Gateway requiere estar ubicado en una subred pública. El instructor creará una subred dedicada para este propósito.
-
-> ⚠️ **Recurso compartido - NO modificar**. Solo el instructor crea este recurso.
-
-1. En el panel de navegación de la izquierda, haga clic en **Subredes**.
-
-2. Haga clic en **Crear subred**.
-
-3. Configure los siguientes parámetros:
-   - **ID de VPC**: Seleccione `vpc-lab2`
-   - **Nombre de la subred**: `subnet-nat-lab2`
-   - **Zona de disponibilidad**: Seleccione la primera zona disponible
-   - **Bloque de CIDR IPv4 de la subred**: `10.0.0.0/24`
-
-4. Haga clic en **Crear subred**.
-
-5. Seleccione la subred `subnet-nat-lab2`.
-
-6. Haga clic en **Acciones → Editar la configuración de la subred**.
-
-7. Marque la casilla **Habilitar la asignación automática de la dirección IPv4 pública**.
-
-8. Haga clic en **Guardar**.
-
-### 1.4 Crear tabla de enrutamiento para la subred del NAT Gateway
-
-> ⚠️ **Recurso compartido - NO modificar**. Solo el instructor crea este recurso.
-
-1. En el panel de navegación de la izquierda, haga clic en **Tablas de enrutamiento**.
-
-2. Haga clic en **Crear tabla de enrutamiento**.
-
-3. Configure los siguientes parámetros:
-   - **Nombre**: `rt-nat-lab2`
-   - **VPC**: Seleccione `vpc-lab2`
-
-4. Haga clic en **Crear tabla de enrutamiento**.
-
-5. En la tabla recién creada, haga clic en la pestaña **Rutas**.
-
-6. Haga clic en **Editar rutas → Agregar ruta**.
-
-7. Configure la nueva ruta:
-   - **Destino**: `0.0.0.0/0`
-   - **Objetivo**: Internet Gateway → seleccione `igw-lab2`
-
-8. Haga clic en **Guardar cambios**.
-
-9. Haga clic en la pestaña **Asociaciones de subred**.
-
-10. Haga clic en **Editar asociaciones de subred**.
-
-11. Seleccione `subnet-nat-lab2` y haga clic en **Guardar asociaciones**.
-
-### 1.5 Crear el NAT Gateway
-
-Un NAT Gateway permite que las instancias en subredes privadas accedan a internet (para actualizaciones, descargas, etc.) sin ser accesibles desde internet.
-
-> ⚠️ **Recurso compartido - NO modificar**. Solo el instructor crea este recurso.
-
-1. En el panel de navegación de la izquierda, haga clic en **Gateways NAT**.
-
-2. Haga clic en **Crear gateway NAT**.
-
-3. Configure los siguientes parámetros:
-   - **Nombre**: `nat-lab2`
-   - **Subred**: Seleccione `subnet-nat-lab2`
-   - **Tipo de conectividad**: Público
-   - **Dirección IP elástica**: Haga clic en **Asignar IP elástica** (se asignará automáticamente)
-
-4. Haga clic en **Crear gateway NAT**.
-
-⏱️ **Nota**: El NAT Gateway puede tardar 2-5 minutos en cambiar a estado **Disponible**.
-
-**✓ Verificación**: El NAT Gateway `nat-lab2` muestra:
-- Estado **Disponible**
-- Ubicado en `subnet-nat-lab2`
-- Una Elastic IP asignada
-
-> ⚠️ El NAT Gateway genera costos por hora y por GB de datos procesados. El instructor se encargará de eliminarlo al finalizar el laboratorio.
-
----
-
-### Verificación por parte de los participantes
-
-Una vez que el instructor confirme que los recursos compartidos están listos, cada participante debe verificar lo siguiente:
+Utilice la barra de búsqueda global (parte superior) y escriba **VPC**. Haga clic en el servicio **VPC**.
 
 1. En el panel de navegación de la izquierda, haga clic en **Sus VPCs**.
 
@@ -248,13 +114,13 @@ Una vez que el instructor confirme que los recursos compartidos están listos, c
 
 3. En el panel de navegación de la izquierda, haga clic en **Gateways de Internet**.
 
-4. Verifique que existe `igw-lab2` y que su estado es **Attached** (asociado a `vpc-lab2`).
+4. Verifique que existe `igw-lab2` y que su estado es **Asociado** (Attached) (asociado a `vpc-lab2`).
 
 5. En el panel de navegación de la izquierda, haga clic en **Gateways NAT**.
 
 6. Verifique que existe `nat-lab2` y que su estado es **Disponible**.
 
-**✓ Verificación**: Los tres recursos compartidos existen y están operativos. Si alguno no aparece, notifique al instructor antes de continuar.
+**✓ Verificación**: Los cinco recursos compartidos existen y están operativos. Si alguno no aparece, notifique al instructor antes de continuar.
 
 ---
 
@@ -264,7 +130,7 @@ Cada participante creará dos subredes dentro de la VPC compartida: una pública
 
 > El instructor le asignará un rango CIDR único. Reemplace `X` e `Y` con los valores que le correspondan.
 
-### 2.1 Crear subred pública
+### 3.1 Crear subred pública
 
 1. En el panel de navegación de la izquierda, haga clic en **Subredes**.
 
@@ -291,7 +157,7 @@ Cada participante creará dos subredes dentro de la VPC compartida: una pública
 - CIDR `10.0.X.0/24`
 - Asignación automática de IP pública habilitada
 
-### 2.2 Crear subred privada
+### 3.2 Crear subred privada
 
 1. Haga clic en **Crear subred** nuevamente.
 
@@ -314,7 +180,7 @@ Cada participante creará dos subredes dentro de la VPC compartida: una pública
 
 Creará dos tablas de enrutamiento: una para la subred pública (con ruta al Internet Gateway) y otra para la subred privada (con ruta al NAT Gateway).
 
-### 3.1 Crear tabla de enrutamiento pública
+### 4.1 Crear tabla de enrutamiento pública
 
 1. En el panel de navegación de la izquierda, haga clic en **Tablas de enrutamiento**.
 
@@ -347,7 +213,7 @@ Creará dos tablas de enrutamiento: una para la subred pública (con ruta al Int
 - Ruta `0.0.0.0/0` → `igw-lab2`
 - Asociada a `subnet-publica-{nombre-participante}`
 
-### 3.2 Crear tabla de enrutamiento privada
+### 4.2 Crear tabla de enrutamiento privada
 
 1. Haga clic en **Crear tabla de enrutamiento**.
 
@@ -389,7 +255,7 @@ Creará un Security Group que permita tráfico SSH y HTTP para las instancias EC
 2. Haga clic en **Crear grupo de seguridad**.
 
 3. Configure los siguientes parámetros:
-   - **Nombre del grupo de seguridad**: `sg-lab2-{nombre-participante}`
+   - **Nombre del grupo de seguridad**: `security-group-lab2-{nombre-participante}`
    - **Descripción**: `Security Group para Lab 2 VPC Networking`
    - **VPC**: Seleccione `vpc-lab2`
 
@@ -403,7 +269,7 @@ Creará un Security Group que permita tráfico SSH y HTTP para las instancias EC
 
 5. Haga clic en **Crear grupo de seguridad**.
 
-**✓ Verificación**: El Security Group `sg-lab2-{nombre-participante}` muestra:
+**✓ Verificación**: El Security Group `security-group-lab2-{nombre-participante}` muestra:
 - 3 reglas de entrada configuradas
 - Reglas de salida: todo el tráfico permitido (por defecto)
 
@@ -415,7 +281,7 @@ Creará un Security Group que permita tráfico SSH y HTTP para las instancias EC
 
 Las NACLs (Network Access Control Lists) son una capa adicional de seguridad a nivel de subred. A diferencia de los Grupos de seguridad, las NACLs son stateless y requieren reglas explícitas tanto de entrada como de salida.
 
-### 5.1 Crear NACL para la subred pública
+### 6.1 Crear NACL para la subred pública
 
 1. En el panel de navegación de la izquierda, haga clic en **ACL de red**.
 
@@ -474,7 +340,7 @@ Las NACLs (Network Access Control Lists) son una capa adicional de seguridad a n
 
 Lanzará dos instancias EC2: una en la subred pública y otra en la subred privada, para verificar la conectividad.
 
-### 6.1 Lanzar instancia en subred pública
+### 7.1 Lanzar instancia en subred pública
 
 1. Utilice la barra de búsqueda global y escriba **EC2**. Haga clic en el servicio **EC2**.
 
@@ -490,11 +356,11 @@ Lanzará dos instancias EC2: una en la subred pública y otra en la subred priva
    - **VPC**: Seleccione `vpc-lab2`
    - **Subred**: Seleccione `subnet-publica-{nombre-participante}`
    - **Asignar automáticamente la IP pública**: Habilitar
-   - **Firewall (grupos de seguridad)**: Seleccionar un grupo de seguridad existente → `sg-lab2-{nombre-participante}`
+   - **Firewall (grupos de seguridad)**: Seleccionar un grupo de seguridad existente → `security-group-lab2-{nombre-participante}`
 
 5. Haga clic en **Lanzar instancia**.
 
-### 6.2 Lanzar instancia en subred privada
+### 7.2 Lanzar instancia en subred privada
 
 1. Haga clic en **Lanzar instancia** nuevamente.
 
@@ -508,7 +374,7 @@ Lanzará dos instancias EC2: una en la subred pública y otra en la subred priva
    - **VPC**: Seleccione `vpc-lab2`
    - **Subred**: Seleccione `subnet-privada-{nombre-participante}`
    - **Asignar automáticamente la IP pública**: Deshabilitar
-   - **Firewall (grupos de seguridad)**: Seleccionar un grupo de seguridad existente → `sg-lab2-{nombre-participante}`
+   - **Firewall (grupos de seguridad)**: Seleccionar un grupo de seguridad existente → `security-group-lab2-{nombre-participante}`
 
 4. Haga clic en **Lanzar instancia**.
 
@@ -522,7 +388,7 @@ Lanzará dos instancias EC2: una en la subred pública y otra en la subred priva
 
 ## Parte 8: Verificar conectividad
 
-### 7.1 Conectarse a la instancia pública
+### 8.1 Conectarse a la instancia pública
 
 1. Seleccione la instancia `ec2-publica-{nombre-participante}`.
 
@@ -538,7 +404,7 @@ Lanzará dos instancias EC2: una en la subred pública y otra en la subred priva
 
 **✓ Verificación**: Debe recibir respuestas exitosas del ping, confirmando que la subred pública tiene acceso a internet a través del Internet Gateway.
 
-### 7.2 Verificar conectividad entre subredes
+### 8.2 Verificar conectividad entre subredes
 
 1. Desde la terminal de la instancia pública, haga ping a la IP privada de la instancia privada:
 
@@ -550,7 +416,7 @@ Lanzará dos instancias EC2: una en la subred pública y otra en la subred priva
 
 **✓ Verificación**: Debe recibir respuestas exitosas del ping, confirmando la comunicación entre subredes dentro de la VPC.
 
-### 7.3 Verificar salida a internet desde subred privada (a través de NAT Gateway)
+### 8.3 Verificar salida a internet desde subred privada (a través de NAT Gateway)
 
 Para verificar que la instancia privada puede acceder a internet a través del NAT Gateway, usaremos la instancia pública como bastión (jump host).
 
@@ -597,7 +463,7 @@ Una Elastic IP es una dirección IPv4 estática que puede asociar a una instanci
 
 4. Configure los siguientes parámetros:
    - **Grupo de borde de red**: Dejar por defecto
-   - **Etiquetas**: Agregue una etiqueta con Clave `Name` y Valor `eip-{nombre-participante}`
+   - **Etiquetas**: Agregue una etiqueta con Clave `Name` y Valor `eip-lab2-{nombre-participante}`
 
 5. Haga clic en **Asignar**.
 

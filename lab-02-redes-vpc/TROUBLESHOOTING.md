@@ -59,13 +59,13 @@ Esta guía contiene soluciones a errores comunes que pueden ocurrir durante la e
 1. Verifique la tabla de enrutamiento:
    - En el panel de VPC, haga clic en **Tablas de enrutamiento**
    - Seleccione `rt-publica-{nombre-participante}`
-   - En la pestaña **Rutas**, verifique que existe una ruta `0.0.0.0/0` → `igw-workshop`
+   - En la pestaña **Rutas**, verifique que existe una ruta `0.0.0.0/0` → `igw-lab2`
    - Si no existe, agregue la ruta siguiendo las instrucciones de la Parte 4.1
 2. Verifique que la tabla de enrutamiento está asociada a la subred correcta:
    - En la pestaña **Asociaciones de subred**, confirme que `subnet-publica-{nombre-participante}` está asociada
 3. Verifique el Internet Gateway:
    - En el panel de VPC, haga clic en **Gateways de Internet**
-   - Confirme que `igw-lab2` tiene estado **Attached** a `vpc-lab2`
+   - Confirme que `igw-lab2` tiene estado **Asociado** (Attached) a `vpc-lab2`
 4. Verifique la NACL (si creó una personalizada):
    - Asegúrese de que las reglas de salida permiten tráfico ICMP
    - Asegúrese de que las reglas de entrada permiten respuestas (puertos efímeros 1024-65535)
@@ -114,7 +114,7 @@ Esta guía contiene soluciones a errores comunes que pueden ocurrir durante la e
 **Solución**:
 1. Verifique el Security Group:
    - En el panel de EC2, haga clic en **Grupos de seguridad**
-   - Seleccione `sg-lab2-{nombre-participante}`
+   - Seleccione `security-group-lab2-{nombre-participante}`
    - En la pestaña **Reglas de entrada**, confirme que existe una regla para SSH (puerto 22)
    - Verifique que el origen incluye su IP actual (puede usar "Mi IP" para actualizarla)
 2. Verifique la NACL (si creó una personalizada):
@@ -141,7 +141,7 @@ Esta guía contiene soluciones a errores comunes que pueden ocurrir durante la e
 **Solución**:
 1. Verifique el Security Group:
    - En el panel de EC2, haga clic en **Grupos de seguridad**
-   - Seleccione `sg-lab2-{nombre-participante}`
+   - Seleccione `security-group-lab2-{nombre-participante}`
    - En la pestaña **Reglas de entrada**, confirme que existe una regla para "Todo el tráfico ICMP - IPv4" con origen `10.0.0.0/16`
    - Si no existe, agregue la regla
 2. Verifique las NACLs:
@@ -194,7 +194,7 @@ Esta guía contiene soluciones a errores comunes que pueden ocurrir durante la e
 **Solución**:
 1. Verifique el Internet Gateway:
    - En el panel de VPC, haga clic en **Gateways de Internet**
-   - Confirme que `igw-lab2` existe y tiene estado **Attached**
+   - Confirme que `igw-lab2` existe y tiene estado **Asociado** (Attached)
    - Si no está asociado, selecciónelo y haga clic en **Acciones → Asociar a VPC**
 2. Verifique el NAT Gateway:
    - En el panel de VPC, haga clic en **Gateways NAT**

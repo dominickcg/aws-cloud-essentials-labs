@@ -65,7 +65,7 @@ Los recursos deben eliminarse en el siguiente orden para respetar las dependenci
 
 1. En el panel de navegación de la izquierda, en la sección **Red y seguridad**, haga clic en **Direcciones IP elásticas**.
 
-2. Seleccione la Elastic IP `eip-{nombre-participante}`.
+2. Seleccione la Elastic IP `eip-lab2-{nombre-participante}`.
 
 3. Haga clic en **Acciones → Liberar direcciones IP elásticas**.
 
@@ -155,13 +155,13 @@ Los recursos deben eliminarse en el siguiente orden para respetar las dependenci
 
 1. En el panel de navegación de la izquierda, haga clic en **Grupos de seguridad**.
 
-2. Seleccione el Security Group `sg-lab2-{nombre-participante}`.
+2. Seleccione el Security Group `security-group-lab2-{nombre-participante}`.
 
 3. Haga clic en **Acciones → Eliminar grupos de seguridad**.
 
 4. Confirme haciendo clic en **Eliminar**.
 
-**✓ Verificación**: El Security Group `sg-lab2-{nombre-participante}` ya no aparece en la lista.
+**✓ Verificación**: El Security Group `security-group-lab2-{nombre-participante}` ya no aparece en la lista.
 
 ---
 
