@@ -1,15 +1,8 @@
 # Limpieza de Recursos - Laboratorio 1 (Opcional)
 
-⚠️ **Nota importante**: Esta limpieza es **opcional**. Solo realícela si **NO continuará con el Laboratorio 4** del programa AWS Cloud Essentials.
-
 ## ¿Cuándo realizar esta limpieza?
 
-Realice esta limpieza únicamente si:
-- Ha decidido no continuar con los laboratorios posteriores del programa
-- No planea realizar el Laboratorio 4 (Página Web Dinámica con RDS)
-- Desea eliminar todos los recursos para evitar costos innecesarios
-
-⚠️ **Advertencia**: Los recursos creados en este laboratorio (instancia EC2 y Grupo de seguridad) se utilizan como base en el **Laboratorio 4**. Si elimina estos recursos, deberá recrearlos cuando llegue al Laboratorio 4.
+Realice esta limpieza únicamente si desea eliminar todos los recursos para evitar costos innecesarios
 
 ## Recursos a eliminar
 
@@ -57,10 +50,6 @@ Este laboratorio creó los siguientes recursos:
 - Si ve recursos sin su sufijo `{nombre-participante}`, son recursos compartidos
 - Estos recursos son utilizados por todos los participantes del programa
 - Eliminar recursos compartidos afectará a otros participantes y al funcionamiento del programa
-
-⚠️ **Recursos que se usan en laboratorios posteriores**:
-- La instancia EC2 creada en este laboratorio se utiliza como base en el **Laboratorio 4**
-- Si elimina estos recursos ahora, deberá recrearlos cuando llegue al Laboratorio 4
 
 ## Verificación de limpieza
 
