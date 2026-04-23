@@ -110,22 +110,22 @@ Esta guía contiene soluciones a errores comunes que pueden ocurrir durante la e
 **Síntoma**: El sitio web se muestra pero sin estilos CSS, las imágenes no aparecen, o los scripts no funcionan.
 
 **Causas posibles**:
-1. Las carpetas `assets`, `scripts` y `styles` no se cargaron correctamente
+1. Las carpetas `assets`, `js` y `css` no se cargaron correctamente
 2. La estructura de carpetas no se mantuvo al cargar los archivos
 3. Los archivos se cargaron dentro de una carpeta adicional
 4. Las rutas en el HTML no coinciden con la estructura de carpetas en S3
 
 **Solución**:
 1. Verifique la estructura de carpetas en el bucket:
-   - En la vista de objetos, confirme que ve las carpetas `assets/`, `scripts/`, `styles/`
+   - En la vista de objetos, confirme que ve las carpetas `assets/`, `js/`, `css/`
    - Haga clic en cada carpeta y verifique que contienen los archivos correspondientes
 2. Si la estructura es incorrecta:
    - Elimine todos los objetos del bucket
    - Vuelva a cargar usando el archivo `website.zip` y la opción **Extraer**
    - O cargue los archivos y carpetas manualmente asegurándose de mantener la estructura
 3. Verifique que no hay carpetas anidadas innecesarias:
-   - La estructura debe ser: `index.html`, `assets/`, `scripts/`, `styles/` en la raíz
-   - NO debe ser: `website/index.html`, `website/assets/`, etc.
+   - La estructura debe ser: `index.html`, `assets/`, `js/`, `css/` en la raíz
+   - NO debe ser: `sitio-web-s3/index.html`, `sitio-web-s3/assets/`, etc.
 4. Si usó el método de carga manual:
    - Asegúrese de seleccionar tanto archivos como carpetas al cargar
    - Use "Agregar carpetas" para mantener la estructura de directorios
@@ -189,10 +189,10 @@ Esta guía contiene soluciones a errores comunes que pueden ocurrir durante la e
    - Cargue los archivos y carpetas directamente al bucket
 2. Después de extraer, verifique la estructura:
    - Debe ver `index.html`, `about.html`, `contacto.html` en la raíz
-   - Debe ver las carpetas `assets/`, `scripts/`, `styles/` en la raíz
+   - Debe ver las carpetas `assets/`, `js/`, `css/` en la raíz
 3. Si la estructura es incorrecta:
    - Elimine todos los objetos
-   - Use el método de carga manual desde la carpeta `website/` descomprimida
+   - Use el método de carga manual desde la carpeta `sitio-web-s3/` descomprimida
 4. Asegúrese de seleccionar "Agregar archivos" Y "Agregar carpetas" al cargar manualmente
 
 ---
@@ -266,7 +266,7 @@ Esta guía contiene soluciones a errores comunes que pueden ocurrir durante la e
    - S3 es sensible a mayúsculas y minúsculas
    - Asegúrese de que los nombres son exactamente `about.html` y `contacto.html` (todo en minúsculas)
 3. Si los archivos no están presentes:
-   - Vuelva a cargar los archivos desde la carpeta `website/` o desde `website.zip`
+   - Vuelva a cargar los archivos desde la carpeta `sitio-web-s3/` o desde `website.zip`
 4. Pruebe acceder directamente a las páginas:
    - `http://su-bucket.s3-website-region.amazonaws.com/about.html`
    - `http://su-bucket.s3-website-region.amazonaws.com/contacto.html`

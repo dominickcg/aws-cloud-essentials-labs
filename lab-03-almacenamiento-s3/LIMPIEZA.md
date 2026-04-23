@@ -29,7 +29,7 @@ En este laboratorio solo creó un recurso:
 
 1. Utilice la barra de búsqueda global (parte superior) y escriba **S3**. Haga clic en el servicio **S3**.
 
-2. En la lista de buckets, localice el bucket `sitio-web-{nombre-participante}`.
+2. En la lista de buckets, localice el bucket `s3-sitio-web-{nombre-participante}`.
 
 3. Haga clic en el nombre del bucket para abrirlo.
 
@@ -52,16 +52,16 @@ En este laboratorio solo creó un recurso:
 
 1. Regrese a la lista de buckets haciendo clic en **Amazon S3** en la parte superior izquierda, o en el enlace **Buckets** del panel de navegación.
 
-2. Seleccione el bucket `sitio-web-{nombre-participante}` marcando la casilla a la izquierda del nombre (no haga clic en el nombre).
+2. Seleccione el bucket `s3-sitio-web-{nombre-participante}` marcando la casilla a la izquierda del nombre (no haga clic en el nombre).
 
 3. Haga clic en el botón **Eliminar** en la parte superior derecha.
 
 4. En la página de confirmación:
    - Lea la advertencia sobre la eliminación permanente del bucket
-   - Escriba el nombre completo del bucket: `sitio-web-{nombre-participante}` en el cuadro de texto
+   - Escriba el nombre completo del bucket: `s3-sitio-web-{nombre-participante}` en el cuadro de texto
    - Haga clic en el botón **Eliminar bucket**
 
-**✓ Verificación**: El bucket `sitio-web-{nombre-participante}` ya no aparece en la lista de buckets.
+**✓ Verificación**: El bucket `s3-sitio-web-{nombre-participante}` ya no aparece en la lista de buckets.
 
 > ⚠️ **Advertencia**: Una vez eliminado, el bucket no se puede recuperar. El nombre del bucket quedará disponible para que otros usuarios de AWS lo utilicen después de un tiempo.
 
@@ -71,7 +71,7 @@ En este laboratorio solo creó un recurso:
 
 Después de completar todos los pasos, verifique que:
 
-- ✓ No aparece el bucket `sitio-web-{nombre-participante}` en la lista de buckets S3
+- ✓ No aparece el bucket `s3-sitio-web-{nombre-participante}` en la lista de buckets S3
 - ✓ La URL del sitio web estático ya no es accesible
 
 ---
@@ -97,4 +97,4 @@ Los siguientes recursos generan costos mientras están activos:
 
 Al eliminar el bucket siguiendo esta guía, dejará de incurrir en costos asociados a este laboratorio.
 
-> 💡 **Nota**: Los costos de S3 para un sitio web estático pequeño son mínimos (generalmente menos de $1 USD por mes), pero es buena práctica eliminar recursos que no se utilizan.
+> **Nota**: Los costos de S3 para un sitio web estático pequeño son mínimos (generalmente menos de $1 USD por mes), pero es buena práctica eliminar recursos que no se utilizan.

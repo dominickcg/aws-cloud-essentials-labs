@@ -25,7 +25,7 @@
 ## Prerrequisitos
 - Cuenta de AWS con permisos para Amazon S3
 - Navegador web para acceder al sitio publicado
-- Archivos del sitio web disponibles en la carpeta `website/` de este laboratorio
+- Archivos del sitio web disponibles en la carpeta `sitio-web-s3/` de este laboratorio
 
 ## Paso 1: Verificar región AWS
 
@@ -57,14 +57,14 @@
 1. **Preparar los archivos localmente**:
    - Descargue el archivo [`website.zip`](website.zip) ubicado en esta carpeta del laboratorio a su computadora
    - Descomprima el archivo `website.zip` en su computadora local
-   - Verifique que la carpeta descomprimida contiene: `index.html`, `about.html`, `contacto.html` y las carpetas `assets`, `scripts`, `styles`
+   - Verifique que la carpeta descomprimida contiene: `index.html`, `about.html`, `contacto.html` y las carpetas `assets`, `js`, `css`
 
 2. **Subir los archivos al bucket S3**:
    - En la lista de buckets, haga clic en el nombre de su bucket `s3-sitio-web-{nombre-participante}`
    - Haga clic en el botón naranja **Cargar**
    - Haga clic en **Agregar archivos** y **Agregar carpetas**
-   - Seleccione todos los archivos y carpetas de la carpeta descomprimida `website/`
-   - Asegúrese de incluir: `index.html`, `about.html`, `contacto.html` y las carpetas `assets`, `scripts`, `styles`
+   - Seleccione todos los archivos y carpetas de la carpeta descomprimida `sitio-web-s3/`
+   - Asegúrese de incluir: `index.html`, `about.html`, `contacto.html` y las carpetas `assets`, `js`, `css`
    - Mantenga las configuraciones predeterminadas
    - Haga clic en el botón naranja **Cargar** al final de la página
    - Espere a que la carga se complete y haga clic en **Cerrar**
@@ -73,7 +73,7 @@
 
 **✓ Verificación**: En la vista de objetos del bucket, confirme que:
 - Puede ver los archivos `index.html`, `about.html`, `contacto.html`
-- Puede ver las carpetas `assets`, `scripts`, `styles`
+- Puede ver las carpetas `assets`, `js`, `css`
 - El estado de carga indica "Correcto" para todos los objetos
 
 ## Paso 4: Configurar hosting web estático
@@ -122,7 +122,7 @@
    - La página principal (`index.html`) se muestra con estilos aplicados
    - Los enlaces de navegación funcionan correctamente
    - Las páginas `about.html` y `contacto.html` son accesibles
-   - Las imágenes y recursos de las carpetas `assets`, `scripts` y `styles` se cargan correctamente
+   - Las imágenes y recursos de las carpetas `assets`, `js` y `css` se cargan correctamente
 
 **✓ Verificación**: Confirme que:
 - El sitio web es accesible desde la URL pública de S3
