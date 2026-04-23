@@ -10,6 +10,7 @@
 - [Paso 4: Configurar hosting web estático](#paso-4-configurar-hosting-web-estatico)
 - [Paso 5: Configurar política de acceso público](#paso-5-configurar-politica-de-acceso-publico)
 - [Paso 6: Verificar el sitio web](#paso-6-verificar-el-sitio-web)
+- [Paso 7: Distribuir el sitio con CloudFront](#paso-7-distribuir-el-sitio-con-cloudfront)
 - [Solución de problemas](#solucion-de-problemas)
 - [Limpieza de recursos](#limpieza-de-recursos)
 
@@ -18,9 +19,10 @@
 - Subir contenido web a S3 y configurar permisos de acceso público
 - Habilitar y configurar el alojamiento de sitios web estáticos en S3
 - Aplicar políticas de bucket para permitir acceso público al contenido web
+- Crear una distribución de CloudFront para servir el sitio con baja latencia y HTTPS
 
 ## Tiempo estimado
-30-40 minutos
+40-55 minutos
 
 ## Prerrequisitos
 - Cuenta de AWS con permisos para Amazon S3
@@ -129,6 +131,41 @@
 - Todas las páginas se muestran correctamente con sus estilos
 - Los enlaces de navegación entre páginas funcionan
 - Las imágenes y recursos multimedia se cargan sin errores
+
+## Paso 7: Distribuir el sitio con CloudFront
+
+Amazon CloudFront es una red de entrega de contenido (CDN) que distribuye el sitio web a través de ubicaciones de borde en todo el mundo, reduciendo la latencia para los visitantes y habilitando acceso por HTTPS.
+
+1. En la barra de búsqueda global (parte superior), escriba **CloudFront** y seleccione el servicio
+2. Haga clic en el botón naranja **Crear distribución**
+3. Ingrese un nombre para la distribución:
+   - **Nombre de la distribución**: `cf-sitio-web-{nombre-participante}`
+4. Seleccione **Sitio web o aplicación individual** y haga clic en **Siguiente**
+5. Haga clic en **Siguiente** en la página de configuración de entrega
+6. En la página **Tipo de origen**, seleccione **Amazon S3**
+7. En **Origen de S3**, haga clic en **Examinar S3** y seleccione su bucket `s3-sitio-web-{nombre-participante}`
+8. En **Configuración**, seleccione **Usar la configuración de origen recomendada**
+   - CloudFront configurará automáticamente Origin Access Control (OAC) para autenticar las solicitudes a su bucket S3
+9. Haga clic en **Siguiente**
+10. En la página **Habilitar protecciones de seguridad**, seleccione si desea habilitar las protecciones de AWS WAF (para este laboratorio puede omitirlas seleccionando **No habilitar protecciones de seguridad**)
+11. Haga clic en **Siguiente**
+12. Haga clic en **Crear distribución**
+    - CloudFront actualizará automáticamente la política de su bucket S3
+
+⏱️ **Nota**: La distribución de CloudFront puede tardar entre 3 y 5 minutos en desplegarse. Espere hasta que la columna **Última modificación** muestre una fecha y hora en lugar de "Implementando".
+
+13. Una vez desplegada, anote el **Nombre de dominio de la distribución** (tiene el formato `d111111abcdef8.cloudfront.net`)
+14. Abra una nueva pestaña en su navegador y acceda a su sitio usando la URL de CloudFront:
+    - `https://{nombre-dominio-distribucion}/index.html`
+15. Verifique que el sitio se carga correctamente por HTTPS
+
+**✓ Verificación**: Confirme que:
+- La distribución aparece en la lista de distribuciones de CloudFront con estado **Habilitado**
+- El sitio web es accesible desde la URL de CloudFront (`https://dXXXXXXXXXXXXX.cloudfront.net`)
+- La conexión usa HTTPS (candado en la barra de direcciones del navegador)
+- Todas las páginas y recursos (CSS, JS, imágenes) se cargan correctamente
+
+> **¿Por qué usar CloudFront?** El hosting de sitios web estáticos en S3 solo soporta HTTP. CloudFront agrega HTTPS, reduce la latencia al servir contenido desde ubicaciones de borde cercanas al visitante, y permite configurar controles de acceso adicionales mediante Origin Access Control (OAC).
 
 ## Solución de problemas
 

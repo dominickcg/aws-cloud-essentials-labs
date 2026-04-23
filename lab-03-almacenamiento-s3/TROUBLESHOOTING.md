@@ -273,6 +273,86 @@ Esta guía contiene soluciones a errores comunes que pueden ocurrir durante la e
 
 ---
 
+### Error: La distribución de CloudFront muestra "Access Denied" al acceder
+
+**Síntoma**: Al abrir la URL de CloudFront, aparece un error XML con el mensaje "Access Denied".
+
+**Causas posibles**:
+1. La política del bucket S3 no fue actualizada correctamente por CloudFront
+2. El Origin Access Control (OAC) no se configuró correctamente
+3. La distribución aún está en proceso de despliegue
+
+**Solución**:
+1. Verifique que la distribución terminó de desplegarse:
+   - En la consola de CloudFront, confirme que la columna **Última modificación** muestra una fecha (no "Implementando")
+2. Verifique la política del bucket S3:
+   - Vaya a S3, seleccione su bucket, pestaña **Permisos**
+   - En **Política de bucket**, confirme que existe una declaración que permite acceso desde CloudFront
+   - La política debe contener una condición `"AWS:SourceArn"` que referencia su distribución
+3. Si la política no se actualizó automáticamente:
+   - En la consola de CloudFront, seleccione su distribución
+   - Vaya a la pestaña **Orígenes**, seleccione el origen S3 y haga clic en **Editar**
+   - Confirme que **Origin Access Control** está seleccionado
+   - Haga clic en **Copiar política** y aplíquela manualmente en la política del bucket S3
+4. Espere 2-3 minutos y vuelva a intentar
+
+---
+
+### Error: CloudFront muestra una página en blanco o "NoSuchKey"
+
+**Síntoma**: Al acceder a la URL raíz de CloudFront (sin especificar un archivo), aparece un error "NoSuchKey" o una página en blanco.
+
+**Causas posibles**:
+1. No se configuró un objeto raíz predeterminado en la distribución
+2. El archivo `index.html` no existe en la raíz del bucket
+
+**Solución**:
+1. Configure el objeto raíz predeterminado:
+   - En la consola de CloudFront, seleccione su distribución
+   - Haga clic en la pestaña **General**, luego en **Editar configuración**
+   - En **Objeto raíz predeterminado**, escriba `index.html`
+   - Haga clic en **Guardar cambios**
+2. Espere a que la distribución termine de desplegarse
+3. Verifique que `index.html` existe en la raíz de su bucket S3
+
+---
+
+### Error: Los cambios en S3 no se reflejan en CloudFront
+
+**Síntoma**: Después de actualizar archivos en el bucket S3, la URL de CloudFront sigue mostrando la versión anterior.
+
+**Causas posibles**:
+1. CloudFront tiene los archivos en caché en las ubicaciones de borde
+2. El tiempo de vida (TTL) del caché no ha expirado
+
+**Solución**:
+1. Cree una invalidación de caché:
+   - En la consola de CloudFront, seleccione su distribución
+   - Haga clic en la pestaña **Invalidaciones**
+   - Haga clic en **Crear invalidación**
+   - En **Rutas de objetos**, escriba `/*` para invalidar todos los archivos
+   - Haga clic en **Crear invalidación**
+2. Espere 1-2 minutos a que la invalidación se complete
+3. Actualice la página en su navegador (Ctrl+F5 para forzar recarga sin caché)
+
+---
+
+### Error: La distribución de CloudFront tarda mucho en desplegarse
+
+**Síntoma**: La columna **Última modificación** muestra "Implementando" por más de 10 minutos.
+
+**Causas posibles**:
+1. CloudFront está propagando la configuración a todas las ubicaciones de borde globales
+2. Hay alta demanda en el servicio
+
+**Solución**:
+1. El despliegue de una distribución nueva puede tardar entre 3 y 15 minutos
+2. No es necesario esperar para continuar con otros pasos del laboratorio
+3. Actualice la página de la consola periódicamente para verificar el estado
+4. Si después de 15 minutos sigue en "Implementando", notifique al instructor
+
+---
+
 ## Errores que Requieren Asistencia del Instructor
 
 Si encuentra alguno de los siguientes errores, **notifique al instructor inmediatamente**. No intente solucionar estos errores por su cuenta:

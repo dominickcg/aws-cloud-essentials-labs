@@ -15,15 +15,50 @@ Realice esta limpieza únicamente si:
 
 ## Recursos a Eliminar
 
-En este laboratorio solo creó un recurso:
+En este laboratorio creó los siguientes recursos:
 
-1. Bucket S3 con sitio web estático
+1. Distribución de CloudFront
+2. Bucket S3 con sitio web estático
+
+> ⚠️ **Importante**: Debe eliminar la distribución de CloudFront ANTES de eliminar el bucket S3, ya que la distribución depende del bucket como origen.
 
 ---
 
 ## Pasos de Eliminación
 
-### 1. Vaciar el Bucket S3
+### 1. Deshabilitar la distribución de CloudFront
+
+> ⚠️ **CRÍTICO**: Debe deshabilitar la distribución antes de poder eliminarla. Las distribuciones activas no se pueden eliminar directamente.
+
+1. Utilice la barra de búsqueda global (parte superior) y escriba **CloudFront**. Haga clic en el servicio **CloudFront**.
+
+2. En la lista de distribuciones, localice la distribución `cf-sitio-web-{nombre-participante}`.
+
+3. Seleccione la distribución marcando la casilla a la izquierda.
+
+4. Haga clic en el botón **Deshabilitar** y confirme haciendo clic en **Deshabilitar distribución**.
+
+⏱️ **Nota**: La deshabilitación puede tardar entre 3 y 5 minutos en propagarse a todas las ubicaciones de borde.
+
+5. Espere hasta que la columna **Última modificación** muestre una nueva fecha y hora (ya no dice "Implementando").
+
+**✓ Verificación**: La columna **Estado** de la distribución muestra **Deshabilitado**.
+
+---
+
+### 2. Eliminar la distribución de CloudFront
+
+1. En la lista de distribuciones, seleccione la distribución deshabilitada marcando la casilla.
+
+2. Haga clic en el botón **Eliminar** y confirme haciendo clic en **Eliminar**.
+
+**✓ Verificación**: La distribución `cf-sitio-web-{nombre-participante}` ya no aparece en la lista de distribuciones.
+
+> ⚠️ **Advertencia**: Si el botón **Eliminar** no está disponible, significa que CloudFront aún está propagando la deshabilitación. Espere unos minutos y vuelva a intentar.
+
+---
+
+### 3. Vaciar el Bucket S3
 
 > ⚠️ **CRÍTICO**: Debe vaciar el bucket antes de poder eliminarlo. Los buckets S3 no se pueden eliminar si contienen objetos.
 
@@ -48,7 +83,7 @@ En este laboratorio solo creó un recurso:
 
 ---
 
-### 2. Eliminar el Bucket S3
+### 4. Eliminar el Bucket S3
 
 1. Regrese a la lista de buckets haciendo clic en **Amazon S3** en la parte superior izquierda, o en el enlace **Buckets** del panel de navegación.
 
@@ -71,19 +106,20 @@ En este laboratorio solo creó un recurso:
 
 Después de completar todos los pasos, verifique que:
 
+- ✓ No aparece la distribución `cf-sitio-web-{nombre-participante}` en la lista de distribuciones de CloudFront
 - ✓ No aparece el bucket `s3-sitio-web-{nombre-participante}` en la lista de buckets S3
-- ✓ La URL del sitio web estático ya no es accesible
+- ✓ La URL del sitio web estático ya no es accesible (ni por S3 ni por CloudFront)
 
 ---
 
 ## Consecuencias de la Eliminación
 
-Al eliminar el bucket S3:
+Al eliminar la distribución de CloudFront y el bucket S3:
 
-- **Sitio web inaccesible**: La URL del sitio web estático dejará de funcionar inmediatamente
+- **Sitio web inaccesible**: Tanto la URL de CloudFront como la URL de S3 dejarán de funcionar inmediatamente
 - **Datos irrecuperables**: Todos los archivos (HTML, CSS, imágenes) se eliminarán permanentemente
 - **Nombre del bucket liberado**: El nombre del bucket quedará disponible para otros usuarios de AWS después de un tiempo
-- **Sin costos adicionales**: Dejará de incurrir en costos de almacenamiento S3 asociados a este bucket
+- **Sin costos adicionales**: Dejará de incurrir en costos de almacenamiento S3 y transferencia de CloudFront asociados a este laboratorio
 
 ---
 
@@ -93,8 +129,9 @@ Los siguientes recursos generan costos mientras están activos:
 
 - **Almacenamiento S3**: Costo por GB almacenado por mes
 - **Solicitudes S3**: Costo por solicitudes GET/PUT (muy bajo para sitios web pequeños)
-- **Transferencia de datos**: Costo por GB transferido fuera de AWS (primeros GB gratuitos)
+- **Transferencia de datos S3**: Costo por GB transferido fuera de AWS (primeros GB gratuitos)
+- **CloudFront**: Costo por solicitudes HTTP/HTTPS y por GB transferido desde las ubicaciones de borde (incluye capa gratuita de 1 TB/mes durante el primer año)
 
-Al eliminar el bucket siguiendo esta guía, dejará de incurrir en costos asociados a este laboratorio.
+Al eliminar la distribución y el bucket siguiendo esta guía, dejará de incurrir en costos asociados a este laboratorio.
 
-> **Nota**: Los costos de S3 para un sitio web estático pequeño son mínimos (generalmente menos de $1 USD por mes), pero es buena práctica eliminar recursos que no se utilizan.
+> **Nota**: Los costos combinados de S3 y CloudFront para un sitio web estático pequeño son mínimos (generalmente menos de $1 USD por mes), pero es buena práctica eliminar recursos que no se utilizan.
