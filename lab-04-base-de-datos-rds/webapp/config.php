@@ -1,7 +1,7 @@
 <?php
 // Configuración de la base de datos RDS
 define('DB_HOST', '[RDS-ENDPOINT]'); // Reemplazar con el endpoint real de RDS
-define('DB_NAME', 'lab3_rds');
+define('DB_NAME', 'lab4_rds');
 define('DB_USER', 'admin');
 define('DB_PASS', 'Lab123456**'); // Usar la contraseña configurada en RDS
 

@@ -98,16 +98,28 @@ Esta guía contiene soluciones a errores comunes que pueden ocurrir durante la e
    - Ingrese la contraseña: `Lab123456**`
    - Si no puede conectar, revise el error anterior sobre conectividad RDS
 2. Verifique que la tabla existe:
-   - Una vez conectado a MySQL, ejecute: `USE webapp;`
+   - Una vez conectado a MySQL, ejecute: `USE lab4_rds;`
    - Ejecute: `SHOW TABLES;`
-   - Debería ver la tabla `registros`
-   - Si no existe, ejecute: `CREATE TABLE registros (id INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(100), email VARCHAR(100), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`
+   - Debería ver la tabla `formulario`
+   - Si no existe, ejecute el script de configuración:
+     ```sql
+     CREATE DATABASE IF NOT EXISTS lab4_rds;
+     USE lab4_rds;
+     CREATE TABLE IF NOT EXISTS formulario (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       nombre VARCHAR(100) NOT NULL,
+       apellido VARCHAR(100) NOT NULL,
+       email VARCHAR(150) NOT NULL UNIQUE,
+       telefono VARCHAR(20),
+       fecha_registro DATETIME DEFAULT (NOW())
+     );
+     ```
 3. Verifique los logs de PHP:
    - Ejecute: `sudo tail -f /var/log/httpd/error_log`
    - Busque errores relacionados con la conexión a la base de datos
 4. Verifique que el endpoint de RDS está correctamente configurado:
-   - Ejecute: `cat /var/www/html/index.php | grep mysqli_connect`
-   - Confirme que el endpoint es correcto
+   - Ejecute: `cat /var/www/html/config.php | grep DB_HOST`
+   - Confirme que el endpoint es correcto y no muestra `[RDS-ENDPOINT]`
 
 ---
 
@@ -280,18 +292,20 @@ Esta guía contiene soluciones a errores comunes que pueden ocurrir durante la e
 3. Si puede conectar, verifique la base de datos:
    ```sql
    SHOW DATABASES;
-   USE webapp;
+   USE lab4_rds;
    SHOW TABLES;
    ```
 4. Si la base de datos o tabla no existe, créela:
    ```sql
-   CREATE DATABASE IF NOT EXISTS webapp;
-   USE webapp;
-   CREATE TABLE registros (
+   CREATE DATABASE IF NOT EXISTS lab4_rds;
+   USE lab4_rds;
+   CREATE TABLE IF NOT EXISTS formulario (
      id INT AUTO_INCREMENT PRIMARY KEY,
-     nombre VARCHAR(100),
-     email VARCHAR(100),
-     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     nombre VARCHAR(100) NOT NULL,
+     apellido VARCHAR(100) NOT NULL,
+     email VARCHAR(150) NOT NULL UNIQUE,
+     telefono VARCHAR(20),
+     fecha_registro DATETIME DEFAULT (NOW())
    );
    ```
 5. Verifique los logs de Apache:

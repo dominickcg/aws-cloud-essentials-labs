@@ -94,7 +94,7 @@
 4. En la sección **Configuración de la instancia**:
    - **Clase de instancia de base de datos**: db.t3.micro
 5. En la sección **Almacenamiento**:
-   - **Tipo de almacenamiento**: SSD de uso general (gp3) - Recomendado por AWS
+   - **Tipo de almacenamiento**: SSD de uso general (gp3)
    - **Almacenamiento asignado**: 20 GiB
 6. En la sección **Conectividad**:
    - **Recurso de computación**: No se conecte a un recurso informático EC2
@@ -114,8 +114,8 @@
 
 **Mientras espera** que la base de datos RDS esté disponible, puede realizar las siguientes tareas:
 
-1. Descargue el archivo [`user-data.sh`](user-data.sh) ubicado en esta carpeta a su computadora local
-2. Revise el contenido del script para familiarizarse con la configuración automática
+1. Abra el archivo [`user-data.sh`](user-data.sh) ubicado en esta carpeta y revise su contenido para familiarizarse con la configuración automática
+2. Tenga listo el contenido del script para copiarlo en el Paso 5
 3. Prepare el par de claves que utilizará para la instancia EC2 (del Laboratorio 1)
 
 ⚠️ **Importante**: NO proceda al Paso 5 hasta que el estado de la base de datos RDS sea **Disponible** (color verde). Puede verificar el estado en **RDS → Bases de datos**.
@@ -161,9 +161,10 @@
 5. Debería ver el formulario de la aplicación web
 6. Complete el formulario con datos de prueba:
    - Ingrese un nombre
+   - Ingrese un apellido
    - Ingrese un correo electrónico
-   - Haga clic en **Enviar**
-7. Haga clic en el botón **Ver Registros** para verificar que los datos se guardaron correctamente en la base de datos RDS
+   - Haga clic en **Registrar Datos**
+7. Haga clic en el botón **Ver Todos los Registros** para verificar que los datos se guardaron correctamente en la base de datos RDS
 
 **✓ Verificación**: Confirme que:
 - La página web se carga correctamente

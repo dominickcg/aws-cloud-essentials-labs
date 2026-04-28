@@ -221,7 +221,7 @@ if ($mostrar_registros) {
         </main>
 
         <footer>
-            <p>&copy; 2025 - AWS Cloud Essentials Lab 4</p>
+            <p>&copy; 2026 - AWS Cloud Essentials Lab 4</p>
         </footer>
     </div>
 </body>
@@ -355,8 +355,8 @@ footer {
 }
 EOF
 
-# Crear database-setup.sql
-cat << 'EOF' > database-setup.sql
+# Crear database-setup.sql en /tmp para no exponerlo via HTTP
+cat << 'EOF' > /tmp/database-setup.sql
 -- Script para configurar la base de datos del Lab 4
 
 CREATE DATABASE IF NOT EXISTS lab4_rds;
@@ -386,9 +386,9 @@ if [ "$RDS_ENDPOINT" != "[RDS-ENDPOINT]" ]; then
     
     # Esperar a que RDS esté disponible
     for i in {1..20}; do
-        if mysql -h $RDS_ENDPOINT -u admin -pLab123456** -e "SELECT 1;" 2>/dev/null; then
+        if mysql -h "$RDS_ENDPOINT" -u admin -p'Lab123456**' -e "SELECT 1;" 2>/dev/null; then
             echo "RDS disponible, configurando base de datos..."
-            mysql -h $RDS_ENDPOINT -u admin -pLab123456** < database-setup.sql
+            mysql -h "$RDS_ENDPOINT" -u admin -p'Lab123456**' < /tmp/database-setup.sql
             if [ $? -eq 0 ]; then
                 echo "Base de datos configurada exitosamente"
             else

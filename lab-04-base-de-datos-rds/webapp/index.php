@@ -69,13 +69,13 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Lab 3 - Página Web Dinámica</title>
+        <title>Lab 4 - Página Web Dinámica</title>
         <link rel="stylesheet" href="styles.css">
     </head>
     <body>
         <div class="container">
             <header>
-                <h1>Lab 3: Página Web Dinámica</h1>
+                <h1>Lab 4: Página Web Dinámica</h1>
                 <p>Conectando EC2 con RDS MySQL</p>
             </header>
 
@@ -165,7 +165,7 @@
             </main>
 
             <footer>
-                <p>&copy; 2025 - AWS Cloud Essentials Lab 3</p>
+                <p>&copy; 2026 - AWS Cloud Essentials Lab 4</p>
             </footer>
         </div>
     </body>
