@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#e8e8e8"/>
+  <rect x="145" y="30" width="110" height="220" rx="16" fill="#0f3460"/>
+  <rect x="155" y="50" width="90" height="170" rx="4" fill="#4fc3f7"/>
+  <circle cx="200" cy="240" r="8" fill="#c4c4c4"/>
+  <text x="200" y="140" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="14" font-weight="bold">Ultra S</text>
+</svg>

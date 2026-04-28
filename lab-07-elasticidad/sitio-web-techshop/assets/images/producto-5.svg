@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#e8e8e8"/>
+  <circle cx="200" cy="140" r="90" fill="#0f3460"/>
+  <circle cx="200" cy="140" r="70" fill="#16213e"/>
+  <circle cx="200" cy="140" r="55" fill="#4fc3f7"/>
+  <text x="200" y="135" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="14" font-weight="bold">12:45</text>
+  <text x="200" y="155" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="10">Pulse</text>
+  <rect x="185" y="50" width="30" height="8" rx="4" fill="#c4c4c4"/>
+</svg>

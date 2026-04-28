@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#e8e8e8"/>
+  <rect x="80" y="70" width="240" height="160" rx="12" fill="#0f3460"/>
+  <circle cx="200" cy="140" r="50" fill="#16213e"/>
+  <circle cx="200" cy="140" r="35" fill="#4fc3f7"/>
+  <circle cx="200" cy="140" r="15" fill="#16213e"/>
+  <rect x="270" y="85" width="30" height="20" rx="4" fill="#e94560"/>
+  <text x="200" y="260" text-anchor="middle" fill="#0f3460" font-family="sans-serif" font-size="16" font-weight="bold">ProShot 4K</text>
+</svg>

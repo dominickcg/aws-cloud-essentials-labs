@@ -1,134 +1,118 @@
-# Limpieza de Recursos - Laboratorio 7
+# Limpieza de Recursos - Laboratorio 7: TechShop HA
 
-Esta guía le ayudará a eliminar todos los recursos creados durante el laboratorio del Portal del Ciudadano.
-
----
-
-## Método Principal: Eliminar la Pila de CloudFormation
-
-La ventaja de usar Infraestructura como Código (IaC) con CloudFormation es que todos los recursos se pueden eliminar con una sola acción. CloudFormation eliminará automáticamente todos los recursos en el orden correcto.
-
-### Pasos para Eliminar la Pila
-
-1. Navegue a la consola de **AWS CloudFormation**:
-   - Utilice la barra de búsqueda global en la parte superior
-   - Escriba "CloudFormation" y seleccione el servicio
-
-2. En el panel de navegación izquierdo, haga clic en **Pilas**
-
-3. Localice su pila con el nombre `[Iniciales]-TC-Portal`
-
-4. Seleccione la pila haciendo clic en el nombre
-
-5. En la esquina superior derecha, haga clic en el botón **Eliminar**
-
-6. En el cuadro de diálogo de confirmación, haga clic en **Eliminar pila**
-
-⚠️ **Advertencia Importante**: Al eliminar la pila de CloudFormation, se eliminarán PERMANENTEMENTE todos los recursos, incluyendo:
-- Todas las instancias EC2 del Auto Scaling Group
-- El Application Load Balancer
-- La Web ACL de AWS WAF y sus reglas asociadas
-- La base de datos RDS Multi-AZ (incluyendo todos los datos almacenados)
-- El secreto de AWS Secrets Manager con las credenciales de la base de datos
-- Los temas SNS y colas SQS
-- La función Lambda
-- Todos los Security Groups, subnets y la VPC
-- Los roles y políticas IAM creados
-
-Esta acción NO se puede deshacer. Asegúrese de que no necesita conservar ningún dato antes de proceder.
-
-⏱️ **Nota sobre el Tiempo de Eliminación**: El proceso de eliminación puede tardar entre 10 y 15 minutos en completarse, especialmente debido a la base de datos RDS Multi-AZ que requiere tiempo para eliminar las réplicas en ambas zonas de disponibilidad.
+Esta guía le ayudará a eliminar todos los recursos creados durante el laboratorio de TechShop HA. La ventaja de usar Infraestructura como Código (IaC) con CloudFormation es que al eliminar la pila se eliminan automáticamente los ~25 recursos creados por la plantilla del participante en el orden correcto de dependencias.
 
 ---
 
-## Verificación de Limpieza
+## Paso 1: Vaciar el bucket S3
 
-Después de iniciar la eliminación, siga estos pasos para confirmar que todos los recursos fueron eliminados correctamente:
+Antes de eliminar la pila de CloudFormation, es necesario vaciar el bucket S3. CloudFormation no puede eliminar un bucket que contiene objetos, por lo que la eliminación de la pila fallará si omite este paso.
 
-### 1. Verificar el Estado de la Pila
+1. Utilice la barra de búsqueda global (parte superior) y escriba **S3**. Haga clic en el servicio **S3**.
 
-1. Permanezca en la consola de CloudFormation
-2. Seleccione la pestaña **Eventos** de su pila
-3. Observe cómo CloudFormation elimina los recursos en orden inverso a su creación
-4. Refresque la vista periódicamente hasta que el estado de la pila cambie a `DELETE_COMPLETE`
+2. En la lista de buckets, localice y haga clic en el bucket con el nombre `techshop-ha-{nombre-participante}-assets`.
 
-**✓ Verificación**: Confirme que el estado final de la pila es `DELETE_COMPLETE` (puede tardar 10-15 minutos)
+3. Seleccione todos los objetos del bucket:
+   - Haga clic en la casilla de verificación en la parte superior de la lista para seleccionar todos los objetos
+   - Esto incluye las imágenes de productos y cualquier otro archivo subido durante el despliegue
 
-### 2. Verificar que No Quedan Instancias EC2 Huérfanas
+4. Haga clic en el botón **Eliminar**.
 
-1. Navegue a la consola de **Amazon EC2**
-2. En el panel izquierdo, haga clic en **Instancias**
-3. Verifique que no aparecen instancias con el nombre de su pila `[Iniciales]-TC-Portal`
+5. En la página de confirmación:
+   - Escriba **eliminar permanentemente** en el campo de confirmación
+   - Haga clic en el botón **Eliminar objetos**
 
-**✓ Verificación**: No deben aparecer instancias relacionadas con su laboratorio. Si aparecen instancias en estado **Terminando**, espere a que completen la terminación.
+6. Espere a que se complete la eliminación y haga clic en **Cerrar**.
 
-### 3. Verificar que la Base de Datos RDS fue Eliminada
+**✓ Verificación**: El bucket `techshop-ha-{nombre-participante}-assets` aparece vacío (0 objetos).
 
-1. Navegue a la consola de **Amazon RDS**
-2. En el panel izquierdo, haga clic en **Bases de datos**
-3. Verifique que no aparece la base de datos `[Iniciales]-TC-Portal-db`
+> ⚠️ **Importante**: Si omite este paso, la eliminación de la pila de CloudFormation fallará con el error `DELETE_FAILED` en el recurso del bucket S3. En ese caso, vacíe el bucket manualmente y vuelva a intentar la eliminación de la pila.
 
-**✓ Verificación**: La base de datos no debe aparecer en la lista. Si aparece en estado **Eliminando**, espere a que complete la eliminación.
+---
+
+## Paso 2: Eliminar la pila de CloudFormation
+
+Una vez vaciado el bucket S3, puede proceder a eliminar la pila completa. CloudFormation se encargará de eliminar todos los recursos restantes (~25 recursos) en el orden correcto.
+
+1. Utilice la barra de búsqueda global (parte superior) y escriba **CloudFormation**. Haga clic en el servicio **CloudFormation**.
+
+2. En el panel de navegación de la izquierda, haga clic en **Pilas**.
+
+3. Localice y seleccione la pila `techshop-ha-{nombre-participante}` haciendo clic en el nombre de la pila.
+
+4. En la esquina superior derecha, haga clic en el botón **Eliminar**.
+
+5. En el cuadro de diálogo de confirmación, haga clic en **Eliminar** para confirmar la eliminación.
+
+6. Monitoree el progreso de la eliminación:
+   - Seleccione la pestaña **Eventos** de la pila
+   - Observe cómo CloudFormation elimina los recursos en orden inverso a su creación
+   - Refresque la vista periódicamente haciendo clic en el icono de actualización
+
+⏱️ **Nota**: El proceso de eliminación puede tardar entre 10 y 15 minutos. La base de datos RDS Multi-AZ es el recurso que más tiempo requiere, ya que debe eliminar la réplica síncrona en la segunda zona de disponibilidad antes de eliminar la instancia principal.
+
+---
+
+## Paso 3: Verificar eliminación completa
+
+1. Permanezca en la consola de CloudFormation y espere a que el estado de la pila cambie a `DELETE_COMPLETE`.
+   - Si la pila desaparece de la lista, significa que la eliminación se completó correctamente (las pilas con estado `DELETE_COMPLETE` solo son visibles si activa el filtro **Eliminadas** en la lista de pilas)
+
+2. Verifique que la pila ya no aparece en la lista de pilas activas:
+   - En la lista de pilas, confirme que `techshop-ha-{nombre-participante}` no aparece
+   - Si desea confirmar el estado final, haga clic en el filtro de estado y seleccione **Eliminadas** para ver la pila con estado `DELETE_COMPLETE`
+
+3. Tiempo estimado de eliminación: 10-15 minutos
+   - Los Security Groups, IAM Roles y recursos de red se eliminan en segundos
+   - El EFS FileSystem y los Mount Targets tardan 1-2 minutos
+   - La distribución CloudFront tarda 2-5 minutos en deshabilitarse y eliminarse
+   - La instancia RDS Multi-AZ es la que más tarda: 5-10 minutos
+
+**✓ Verificación**: Confirme que todos los recursos han sido eliminados:
+- La pila `techshop-ha-{nombre-participante}` muestra estado `DELETE_COMPLETE` o ya no aparece en la lista
+- No quedan instancias EC2 del Auto Scaling Group en la consola de EC2
+- La base de datos RDS ya no aparece en la consola de RDS
+- El bucket S3 ya no aparece en la consola de S3
+- La distribución CloudFront ya no aparece en la consola de CloudFront
 
 ---
 
 ## Advertencias Importantes
 
-⚠️ **NO Elimine Recursos de Otros Participantes**: Antes de eliminar cualquier recurso, verifique siempre que el nombre contiene sus iniciales. Eliminar recursos de otros participantes interrumpirá su trabajo y causará problemas en el entorno compartido.
+⚠️ **NO elimine la infraestructura del instructor**. Los siguientes recursos son compartidos por todos los participantes y NO deben eliminarse bajo ninguna circunstancia:
+- **VPC** y sus subredes (públicas y privadas)
+- **Internet Gateway**
+- **NAT Gateway**
+- **Tablas de enrutamiento** (públicas y privadas)
 
-⚠️ **Verifique el Nombre de la Pila**: Asegúrese de seleccionar la pila correcta antes de hacer clic en "Eliminar". El nombre debe ser `[Iniciales]-TC-Portal` donde `[Iniciales]` son sus iniciales personales.
+Estos recursos fueron desplegados por el instructor mediante la plantilla `TechShop-Instructor-Infra.yaml` y son utilizados por todos los participantes. Eliminarlos afectará el trabajo de los demás participantes.
 
-⚠️ **Pérdida Permanente de Datos**: Una vez eliminada la pila, NO es posible recuperar:
-- Los datos almacenados en la base de datos RDS
-- Los logs de CloudWatch
-- Las configuraciones personalizadas realizadas durante el laboratorio
+⚠️ **Verifique el nombre de la pila**: Antes de hacer clic en "Eliminar", confirme que el nombre de la pila contiene su nombre de participante (`techshop-ha-{nombre-participante}`). No elimine pilas de otros participantes.
 
----
-
-## Recursos que NO Deben Eliminarse
-
-Los siguientes recursos NO fueron creados por su pila y NO deben eliminarse:
-
-- Recursos compartidos del instructor (si existen)
-- Recursos de otros participantes (identificables por diferentes iniciales en el nombre)
-- Recursos de laboratorios anteriores que aún necesite
+⚠️ **Pérdida permanente de datos**: Al eliminar la pila, se eliminan permanentemente todos los datos almacenados en la base de datos RDS, los archivos del sistema EFS y los objetos del bucket S3. Esta acción no se puede deshacer.
 
 ---
 
 ## Solución de Problemas Durante la Limpieza
 
-### Error: La pila queda en estado DELETE_FAILED
+### La pila queda en estado DELETE_FAILED
 
-**Síntoma**: La eliminación de la pila falla y queda en estado `DELETE_FAILED`.
-
-**Causas posibles**:
-1. Algún recurso fue modificado o eliminado manualmente fuera de CloudFormation
-2. Existen dependencias externas que impiden la eliminación
+**Causa más común**: El bucket S3 no fue vaciado antes de iniciar la eliminación.
 
 **Solución**:
 1. Revise la pestaña **Eventos** para identificar qué recurso causó el fallo
-2. Si es posible, elimine manualmente el recurso problemático desde su consola respectiva
-3. Intente eliminar la pila nuevamente
-4. Si el problema persiste, notifique al instructor
+2. Si el error es en el bucket S3, vaya a la consola de S3, vacíe el bucket manualmente y vuelva a intentar la eliminación de la pila
+3. Si el problema persiste con otro recurso, notifique al instructor
 
 ### La eliminación tarda más de 20 minutos
 
-**Síntoma**: Han pasado más de 20 minutos y la pila sigue en estado `DELETE_IN_PROGRESS`.
-
 **Solución**:
-1. Esto puede ser normal para bases de datos RDS Multi-AZ grandes
-2. Revise la pestaña **Eventos** para ver qué recurso se está eliminando actualmente
+1. Revise la pestaña **Eventos** para ver qué recurso se está eliminando actualmente
+2. La base de datos RDS Multi-AZ puede tardar hasta 15 minutos en eliminarse
 3. Si el proceso parece detenido en un recurso específico por más de 30 minutos, notifique al instructor
 
 ---
 
-## Confirmación Final
+## ¿Necesita ayuda?
 
-Una vez completada la limpieza, confirme que:
-
-- ✓ La pila de CloudFormation está en estado `DELETE_COMPLETE` o ya no aparece en la lista
-- ✓ No quedan instancias EC2 relacionadas con el laboratorio
-- ✓ La base de datos RDS fue eliminada
-- ✓ No aparecen cargos inesperados en la facturación de AWS relacionados con este laboratorio
-
-Si tiene dudas sobre algún recurso o cargo, consulte con el instructor antes de finalizar.
+Si encuentra problemas durante la limpieza de recursos, consulte la [Guía de Solución de Problemas](TROUBLESHOOTING.md) o notifique al instructor.

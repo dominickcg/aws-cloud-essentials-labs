@@ -45,7 +45,7 @@ Antes de comenzar con los laboratorios, asegúrese de cumplir con los siguientes
 | [Lab 04](./lab-04-base-de-datos-rds/) | Página Web Dinámica con RDS | Integre una aplicación web PHP con una base de datos MySQL en Amazon RDS | 50-65 min |
 | [Lab 05](./lab-05-seguridad-gobernanza/) | Seguridad, Identidad y Gobernanza | Gestione identidades con IAM, detecte amenazas con GuardDuty y audite actividad con CloudTrail | 60 min |
 | [Lab 06](./lab-06-integracion-de-aplicaciones/) | Desacoplamiento con SNS y SQS | Implemente el patrón Fanout con Amazon SNS y SQS para comunicación asíncrona entre componentes | 40 min |
-| [Lab 07](./lab-07-elasticidad/) | Elasticidad | Despliegue una arquitectura de misión crítica con CloudFormation, ALB, Auto Scaling, RDS Multi-AZ y WAF | 90 min |
+| [Lab 07](./lab-07-elasticidad/) | TechShop - Arquitectura de Alta Disponibilidad | Despliegue la tienda TechShop con arquitectura HA usando CloudFormation, ALB, Auto Scaling, RDS Multi-AZ, EFS, CloudFront, WAF y CloudWatch | 90 min |
 
 ## Convenciones de Nombres
 

@@ -1,28 +1,31 @@
-# 🏛️ Laboratorio 7: Portal del Ciudadano para Consulta de Expedientes Constitucionales - Arquitectura en Alta Disponibilidad
+# 🏗️ Laboratorio 7: TechShop - Arquitectura de Alta Disponibilidad
 
 ## Índice
+
 - [Objetivos de aprendizaje](#objetivos-de-aprendizaje)
 - [Tiempo estimado](#tiempo-estimado)
 - [Prerrequisitos](#prerrequisitos)
 - [Escenario de negocio](#escenario-de-negocio)
 - [Arquitectura de la solución](#arquitectura-de-la-solución)
 - [Fase 1: Despliegue con CloudFormation (25 min)](#fase-1-despliegue-con-cloudformation-25-min)
-  - [Paso 1: Verificar región AWS](#paso-1-verificar-región-aws)
-  - [Paso 2: Lanzar la pila de CloudFormation](#paso-2-lanzar-la-pila-de-cloudformation)
-  - [Paso 3: Monitorear eventos de la pila y confirmar suscripción de correo](#paso-3-monitorear-eventos-de-la-pila-y-confirmar-suscripción-de-correo)
-- [Fase 2: Alta Disponibilidad y Seguridad (30 min)](#fase-2-alta-disponibilidad-y-seguridad-30-min)
-  - [Paso 4: Acceder al portal](#paso-4-acceder-al-portal)
-  - [Paso 5: Inspeccionar AWS WAF](#paso-5-inspeccionar-aws-waf)
-  - [Paso 6: Simular fallo de servidor](#paso-6-simular-fallo-de-servidor)
-  - [Paso 7: Inspeccionar RDS Multi-AZ y Secrets Manager](#paso-7-inspeccionar-rds-multi-az-y-secrets-manager)
-  - [Paso 8: Inspeccionar roles IAM](#paso-8-inspeccionar-roles-iam)
-- [Fase 3: Arquitectura Orientada a Eventos (15 min)](#fase-3-arquitectura-orientada-a-eventos-15-min)
-  - [Paso 9: Publicar mensaje en SNS](#paso-9-publicar-mensaje-en-sns)
-  - [Paso 10: Inspeccionar cola SQS y concepto de buffer](#paso-10-inspeccionar-cola-sqs-y-concepto-de-buffer)
-  - [Paso 11: Verificar Lambda y CloudWatch](#paso-11-verificar-lambda-y-cloudwatch)
-- [Fase 4: IA para el Ciudadano (20 min)](#fase-4-ia-para-el-ciudadano-20-min)
-  - [Paso 12: Chatbot con Amazon Bedrock](#paso-12-chatbot-con-amazon-bedrock)
-  - [Paso 13: Síntesis de voz con Amazon Polly](#paso-13-síntesis-de-voz-con-amazon-polly)
+  - [Paso 1: Verificar región y comprender Infraestructura como Código (5 min)](#paso-1-verificar-región-y-comprender-infraestructura-como-código-5-min)
+  - [Paso 2: Lanzar la pila de CloudFormation (10 min)](#paso-2-lanzar-la-pila-de-cloudformation-10-min)
+  - [Paso 3: Monitorear eventos de la pila (10 min)](#paso-3-monitorear-eventos-de-la-pila-10-min)
+- [Fase 2: Alta Disponibilidad y Almacenamiento (25 min)](#fase-2-alta-disponibilidad-y-almacenamiento-25-min)
+  - [Paso 4: Acceder a TechShop via CloudFront (5 min)](#paso-4-acceder-a-techshop-via-cloudfront-5-min)
+  - [Paso 5: Inspeccionar EFS (5 min)](#paso-5-inspeccionar-efs-5-min)
+  - [Paso 6: Simular fallo de servidor (10 min)](#paso-6-simular-fallo-de-servidor-10-min)
+  - [Paso 7: Inspeccionar RDS Multi-AZ (5 min)](#paso-7-inspeccionar-rds-multi-az-5-min)
+- [Fase 3: Distribución de Contenido y Seguridad (20 min)](#fase-3-distribución-de-contenido-y-seguridad-20-min)
+  - [Paso 8: Inspeccionar CloudFront (5 min)](#paso-8-inspeccionar-cloudfront-5-min)
+  - [Paso 9: Inspeccionar S3 con OAC (5 min)](#paso-9-inspeccionar-s3-con-oac-5-min)
+  - [Paso 10: Inspeccionar WAF (5 min)](#paso-10-inspeccionar-waf-5-min)
+  - [Paso 11: Verificar caching de CloudFront (5 min)](#paso-11-verificar-caching-de-cloudfront-5-min)
+- [Fase 4: Observabilidad con CloudWatch (20 min)](#fase-4-observabilidad-con-cloudwatch-20-min)
+  - [Paso 12: Inspeccionar alarmas de CloudWatch (5 min)](#paso-12-inspeccionar-alarmas-de-cloudwatch-5-min)
+  - [Paso 13: Inspeccionar dashboard de CloudWatch (5 min)](#paso-13-inspeccionar-dashboard-de-cloudwatch-5-min)
+  - [Paso 14: Verificar métricas de CloudFront (5 min)](#paso-14-verificar-métricas-de-cloudfront-5-min)
+  - [Paso 15: Revisión final de capas de alta disponibilidad (5 min)](#paso-15-revisión-final-de-capas-de-alta-disponibilidad-5-min)
 - [Solución de problemas](#solución-de-problemas)
 - [Limpieza de recursos](#limpieza-de-recursos)
 
@@ -30,14 +33,11 @@
 
 Al completar este laboratorio, usted será capaz de:
 
-- Desplegar infraestructura completa de misión crítica mediante Infraestructura como Código (IaC) con AWS CloudFormation
-- Validar alta disponibilidad y auto scaling terminando instancias EC2 y observando la recuperación automática
-- Inspeccionar seguridad perimetral con AWS WAF y gestión de credenciales con AWS Secrets Manager
-- Comprender el principio de mínimo privilegio mediante roles IAM
-- Comprender arquitecturas orientadas a eventos con Amazon SNS, Amazon SQS y AWS Lambda para procesamiento desacoplado
-- Interactuar con servicios de Inteligencia Artificial Generativa mediante Amazon Bedrock para asistencia ciudadana
-- Implementar accesibilidad mediante síntesis de voz con Amazon Polly para ciudadanos con discapacidad visual
-- Inspeccionar tolerancia a fallos con Amazon RDS Multi-AZ para protección de datos críticos
+- Desplegar una arquitectura completa de alta disponibilidad mediante Infraestructura como Código (IaC) con AWS CloudFormation, aprovisionando ~25 recursos con un solo archivo
+- Validar alta disponibilidad simulando fallos de servidor y observando la recuperación automática con Auto Scaling, ALB y almacenamiento compartido con EFS
+- Inspeccionar la distribución de contenido con Amazon CloudFront y el acceso restringido a S3 mediante Origin Access Control (OAC)
+- Comprender la seguridad perimetral con AWS WAF y su protección contra ataques web comunes en el edge
+- Configurar y analizar observabilidad proactiva con alarmas y dashboards de Amazon CloudWatch
 
 ## Tiempo estimado
 
@@ -49,145 +49,147 @@ Para completar este laboratorio, usted necesita:
 
 - Acceso a una cuenta AWS compartida proporcionada por el instructor
 - Navegador web moderno (Chrome, Firefox, Edge o Safari)
-- Acceso a su correo electrónico personal para confirmar suscripciones de Amazon SNS
-- Archivo `TC-Portal-HA-Lab.yaml` descargado localmente en su computadora
+- Infraestructura de red desplegada previamente por el instructor mediante la plantilla `TechShop-Instructor-Infra.yaml`
+  - Esta plantilla crea la VPC, subredes públicas y privadas, Internet Gateway, NAT Gateway y tablas de enrutamiento
+  - Recurso compartido - NO modificar
+- Región **us-east-1** (N. Virginia) configurada en la consola de AWS
+- Archivo `TechShop-HA-Lab.yaml` descargado localmente en su computadora (disponible en esta carpeta del repositorio)
 
 ## Escenario de negocio
 
-El portal de consulta de expedientes constitucionales enfrenta un desafío crítico: cada vez que se publica un fallo controversial sobre temas sensibles como habeas corpus, amparo o inconstitucionalidad de leyes, el portal web experimenta saturación masiva de tráfico. Miles de ciudadanos, abogados, periodistas y académicos intentan acceder simultáneamente a los expedientes, causando caídas del sistema y negando el acceso a la justicia constitucional.
+TechShop es una tienda e-commerce de productos tecnológicos que ha experimentado un crecimiento acelerado en los últimos meses. Durante eventos de ventas como Black Friday y Cyber Monday, el sitio web experimenta picos de tráfico de hasta 10 veces el volumen normal, causando caídas del sistema y pérdida de ventas.
 
-Esta situación es inaceptable en un estado democrático de derecho. El acceso a la información judicial es un derecho fundamental que no puede depender de la capacidad de un solo servidor. Además, el portal debe garantizar que todos los ciudadanos, incluyendo personas con discapacidad visual, puedan consultar las resoluciones de manera accesible.
+El equipo de TechShop ha identificado los siguientes problemas críticos:
 
-Su misión es desplegar y validar una arquitectura de "Misión Crítica" que garantice:
+- El servidor web único no soporta los picos de tráfico y se satura
+- Cuando el servidor falla, toda la tienda queda fuera de línea
+- La base de datos no tiene respaldo en tiempo real, arriesgando pérdida de datos de pedidos
+- Los archivos compartidos entre servidores no están sincronizados
+- No existe protección contra ataques web comunes
+- No hay visibilidad sobre el estado de la infraestructura ni alertas proactivas
 
-- **Alta Disponibilidad**: El portal permanece en línea incluso si un servidor completo falla
-- **Escalabilidad Automática**: El sistema se adapta automáticamente a picos masivos de tráfico
-- **Seguridad Perimetral**: AWS WAF protege el portal contra ataques web comunes y AWS Secrets Manager gestiona las credenciales de la base de datos de forma segura
-- **Procesamiento Desacoplado**: Los expedientes se procesan de manera asíncrona sin colapsar la infraestructura
-- **Asistencia Inteligente**: Un chatbot de IA ayuda a los ciudadanos a comprender términos legales complejos
-- **Accesibilidad Universal**: Síntesis de voz permite a personas con discapacidad visual escuchar las resoluciones
+Su misión es desplegar y validar una arquitectura de alta disponibilidad que resuelva todos estos problemas, garantizando que TechShop permanezca en línea y protegida durante los picos de tráfico más exigentes.
 
 ## Arquitectura de la solución
 
-La arquitectura que desplegará en este laboratorio integra múltiples servicios de AWS para crear un sistema resiliente y escalable:
-
-### Componentes de Alta Disponibilidad y Seguridad
+La arquitectura que desplegará en este laboratorio distribuye la aplicación en múltiples capas de resiliencia, cada una diseñada para eliminar puntos únicos de fallo:
 
 ```
-┌──────────────┐
-│              │
-│  Ciudadano   │──────HTTP/HTTPS──┐
-│              │                  │
-└──────────────┘                  ▼
-                          ┌─────────────────────┐
-                          │  AWS WAF             │
-                          │  Web ACL             │
-                          │  (Filtro de tráfico) │
-                          └─────────────────────┘
-                                  │
-                                  ▼ tráfico filtrado
-                          ┌─────────────────────┐
-                          │ Application Load     │
-                          │ Balancer (ALB)       │
-                          │ Multi-AZ             │
-                          └─────────────────────┘
-                            │                 │
-                ┌───────────┘                 └───────────┐
-                ▼                                         ▼
-┌─────────────────────────────────┐   ┌─────────────────────────────────┐
-│  Zona de Disponibilidad A       │   │  Zona de Disponibilidad B       │
-│                                 │   │                                 │
-│  ┌──────────────────────┐      │   │  ┌──────────────────────┐      │
-│  │  EC2 Instance        │      │   │  │  EC2 Instance        │      │
-│  │  Portal Web        │      │   │  │  Portal Web        │      │
-│  └──────────────────────┘      │   │  └──────────────────────┘      │
-│           │                     │   │           │                     │
-│  ┌──────────────────────┐      │   │  ┌──────────────────────┐      │
-│  │  RDS Primary         │      │   │  │  RDS Standby         │      │
-│  │  MySQL               │◄─────┼───┼──│  MySQL Replica       │      │
-│  └──────────────────────┘      │   │  └──────────────────────┘      │
-│           ▲                     │   │  (Replicación Síncrona)        │
-└───────────┼─────────────────────┘   └─────────────────────────────────┘
-            │
-┌───────────┴─────────────────────┐
-│  AWS Secrets Manager            │
-│  Credenciales auto-generadas    │
-│  para la base de datos RDS      │
-└─────────────────────────────────┘
+                            ┌─────────────────────┐
+                            │     Usuarios /       │
+                            │     Navegador        │
+                            └──────────┬──────────┘
+                                       │ HTTPS
+                                       ▼
+                            ┌─────────────────────┐
+                            │     AWS WAF          │
+                            │  (Seguridad en Edge) │
+                            └──────────┬──────────┘
+                                       │
+                                       ▼
+                            ┌─────────────────────┐
+                            │  CloudFront (CDN)    │
+                            │  2 orígenes:         │
+                            │  ALB + S3 con OAC    │
+                            └───┬─────────────┬───┘
+                     Dinámico   │             │  Estático
+                     (/* )      │             │  (/images/*, /assets/*)
+                                ▼             ▼
+                ┌──────────────────┐   ┌──────────────────┐
+                │  Application     │   │  S3 Bucket       │
+                │  Load Balancer   │   │  (OAC - acceso   │
+                │  (Multi-AZ)      │   │   solo CloudFront)│
+                └───────┬─────────┘   └──────────────────┘
+                        │
+           ┌────────────┴────────────┐
+           ▼                         ▼
+┌─────────────────────┐   ┌─────────────────────┐
+│  us-east-1a         │   │  us-east-1b         │
+│                     │   │                     │
+│  EC2 Instance A     │   │  EC2 Instance B     │
+│  (Auto Scaling)     │   │  (Auto Scaling)     │
+│                     │   │                     │
+│  EFS Mount Target A │   │  EFS Mount Target B │
+│  (Subred privada)   │   │  (Subred privada)   │
+│                     │   │                     │
+│  RDS Primary        │   │  RDS Standby        │
+│  (Subred privada)   │   │  (Réplica síncrona) │
+└─────────────────────┘   └─────────────────────┘
+           │                         │
+           └────────────┬────────────┘
+                        ▼
+              ┌──────────────────┐
+              │  CloudWatch      │
+              │  Dashboard +     │
+              │  Alarmas         │
+              └──────────────────┘
 
-        ┌────────────────────────────────────┐
-        │  Auto Scaling Group                │
-        │  Min: 2 | Max: 4 | Desired: 2     │
-        │  Gestiona instancias EC2           │
-        └────────────────────────────────────┘
+Auto Scaling Group: Min 2 | Max 4 | Deseado 2
+EFS: Almacenamiento compartido entre todas las instancias
+RDS Multi-AZ: Replicación síncrona con failover automático
 ```
 
-### Componentes de Arquitectura Orientada a Eventos
+### Justificación de alta disponibilidad por servicio
 
-```
-┌──────────────────┐         ┌──────────────────┐         ┌──────────────────┐
-│  Amazon SNS      │────────▶│  Amazon SQS      │────────▶│  AWS Lambda      │
-│  Topic           │         │  Queue           │         │  Procesador      │
-│  Alertas         │         │  Buffer          │         │  Expedientes     │
-└──────────────────┘         └──────────────────┘         └──────────────────┘
-        │                                                           │
-        │                                                           │
-        ▼                                                           ▼
-┌──────────────────┐                                     ┌──────────────────┐
-│  Correo Email    │                                     │  CloudWatch Logs │
-│  del Participante│                                     │  Registros       │
-└──────────────────┘                                     └──────────────────┘
-```
-
-### Componentes de Inteligencia Artificial
-
-```
-┌──────────────────┐                    ┌──────────────────────────────┐
-│  EC2 Portal Web  │───API Call────────▶│  Amazon Bedrock              │
-│  Aplicación Web  │                    │  Asistente Constitucional    │
-└──────────────────┘                    │  (Modelo de IA Generativa)   │
-        │                               └──────────────────────────────┘
-        │
-        │
-        │───API Call────────▶┌──────────────────────────────┐
-                             │  Amazon Polly                │
-                             │  Síntesis de Voz             │
-                             │  (Texto a Audio Neural)      │
-                             └──────────────────────────────┘
-```
-
-### Concepto de Infraestructura como Código (IaC)
-
-En este laboratorio, utilizará AWS CloudFormation para desplegar toda esta arquitectura compleja en cuestión de minutos, sin realizar configuraciones manuales. CloudFormation lee una plantilla (archivo YAML) que describe todos los recursos necesarios, calcula automáticamente las dependencias entre ellos, y los aprovisiona en el orden correcto.
-
-Esto significa que en lugar de hacer clic manualmente para crear la VPC, luego las subnets, luego los security groups, luego las instancias EC2, luego el balanceador de carga, etc., simplemente cargará un archivo y CloudFormation hará todo el trabajo pesado por usted. Esta es la esencia de la Infraestructura como Código: definir su infraestructura en un archivo versionable y reproducible.
+| Servicio | Rol en la arquitectura | Justificación HA |
+|----------|----------------------|------------------|
+| **EC2 Auto Scaling** | Cómputo | Redundancia de servidores con escalado automático entre 2 y 4 instancias distribuidas en dos zonas de disponibilidad |
+| **ALB** | Distribución de tráfico | Balanceo de carga con health checks que detectan y desvían tráfico de instancias fallidas automáticamente |
+| **RDS Multi-AZ** | Base de datos | Replicación síncrona con failover automático a una réplica standby en otra zona de disponibilidad |
+| **EFS** | Almacenamiento compartido | Sistema de archivos persistente accesible desde todas las instancias EC2, permitiendo que nuevas instancias sirvan contenido inmediatamente |
+| **S3** | Almacenamiento de objetos | Durabilidad de 99.999999999% (11 nueves) para imágenes de productos y activos estáticos |
+| **CloudFront** | CDN | Caching en ubicaciones de borde a nivel mundial, reduciendo latencia y descargando los servidores de origen |
+| **WAF** | Seguridad perimetral | Firewall de aplicaciones web en el edge que bloquea tráfico malicioso antes de que alcance la infraestructura |
+| **CloudWatch** | Observabilidad | Monitoreo proactivo con alarmas que permiten detección y respuesta rápida ante problemas |
 
 ---
 
 ## Fase 1: Despliegue con CloudFormation (25 min)
 
-### Paso 1: Verificar región AWS
+### Paso 1: Verificar región y comprender Infraestructura como Código (5 min)
 
 1. Verifique que está trabajando en la región correcta:
    - En la esquina superior derecha de la consola de AWS
-   - Confirme que dice la región estipulada por el instructor
-   - Si no es correcta, haga clic y seleccione la región indicada
+   - Confirme que dice **EE.UU. Este (Norte de Virginia) us-east-1**
+   - Si no es correcta, haga clic en el selector de región y seleccione **US East (N. Virginia) us-east-1**
 
-**¿Qué es Infraestructura como Código (IaC)?**
+⚠️ **Importante**: La región **us-east-1** es obligatoria para este laboratorio. AWS WAF con scope `CLOUDFRONT` solo puede crearse en us-east-1 cuando se define en la misma pila de CloudFormation que la distribución CloudFront.
 
-En este laboratorio, utilizará un enfoque revolucionario para desplegar infraestructura: en lugar de hacer clic manualmente en la consola para crear cada recurso (VPC, subnets, balanceador de carga, instancias EC2, base de datos, etc.), cargará un archivo de plantilla que describe toda la arquitectura.
+**Infraestructura como Código (IaC)**
 
-AWS CloudFormation leerá esta plantilla, calculará automáticamente las dependencias entre los recursos, y los aprovisionará en el orden correcto. En cuestión de minutos, tendrá una arquitectura completa de misión crítica funcionando, sin configurar manualmente ni un solo recurso.
+En este laboratorio, utilizará AWS CloudFormation para desplegar toda la arquitectura de alta disponibilidad de TechShop en cuestión de minutos, sin crear manualmente ni un solo recurso. CloudFormation lee una plantilla (archivo YAML) que describe los ~25 recursos necesarios, calcula automáticamente las dependencias entre ellos, y los aprovisiona en el orden correcto.
 
-Esta es la esencia de la Infraestructura como Código: definir su infraestructura en un archivo versionable, reproducible y auditable. Si necesita crear el mismo entorno 10 veces, simplemente ejecuta la plantilla 10 veces. Si necesita eliminar todo, elimina la pila y CloudFormation se encarga de limpiar todos los recursos.
+En lugar de hacer clic manualmente para crear la VPC, luego las subredes, luego los grupos de seguridad, luego las instancias EC2, luego el balanceador de carga, la base de datos, el CDN, el WAF, etc., simplemente cargará un archivo y CloudFormation hará todo el trabajo. Esta es la esencia de la Infraestructura como Código: definir su infraestructura en un archivo versionable y reproducible.
+
+**Infraestructura compartida del instructor**
+
+Antes de iniciar, el instructor ya desplegó la infraestructura de red base mediante la plantilla `TechShop-Instructor-Infra.yaml`. Esta infraestructura incluye:
+
+- VPC con soporte DNS habilitado
+- 2 subredes públicas (us-east-1a y us-east-1b) con IP pública automática
+- 2 subredes privadas (us-east-1a y us-east-1b)
+- Internet Gateway para acceso público
+- NAT Gateway para acceso saliente desde subredes privadas
+- Tablas de enrutamiento configuradas
+
+Recurso compartido - NO modificar
+
+Usted seleccionará estos recursos de red como parámetros al lanzar su pila de CloudFormation en el siguiente paso.
 
 **Arquitectura que desplegará:**
 
-Revise los diagramas de arquitectura presentados en la sección [Arquitectura de la solución](#arquitectura-de-la-solución) al inicio de este documento. Observe cómo los componentes se distribuyen en múltiples zonas de disponibilidad para garantizar alta disponibilidad, cómo AWS WAF filtra el tráfico antes de llegar al Application Load Balancer, cómo AWS Secrets Manager gestiona las credenciales de la base de datos, y cómo los servicios de eventos e IA se integran para crear un sistema resiliente y moderno.
+Revise el diagrama de arquitectura presentado en la sección [Arquitectura de la solución](#arquitectura-de-la-solución) al inicio de este documento. Observe cómo cada servicio contribuye a eliminar puntos únicos de fallo:
 
-### Paso 2: Lanzar la pila de CloudFormation
+- **EC2 Auto Scaling + ALB**: Redundancia de cómputo con escalado automático entre 2 y 4 instancias distribuidas en dos zonas de disponibilidad. El ALB distribuye el tráfico y detecta instancias fallidas mediante health checks.
+- **RDS Multi-AZ**: La base de datos mantiene una réplica síncrona en otra zona de disponibilidad con failover automático.
+- **EFS**: Almacenamiento compartido persistente accesible desde todas las instancias, permitiendo que nuevas instancias sirvan contenido inmediatamente al arrancar.
+- **CloudFront + S3 con OAC**: CDN que cachea contenido estático en ubicaciones de borde globales. S3 almacena imágenes con acceso restringido exclusivamente a través de CloudFront.
+- **WAF**: Firewall de aplicaciones web que filtra tráfico malicioso en el edge antes de que alcance la infraestructura.
+- **CloudWatch**: Alarmas y dashboard para monitoreo proactivo de CPU, solicitudes del ALB y conexiones de base de datos.
 
-Ahora desplegará toda la infraestructura del Portal del Ciudadano utilizando AWS CloudFormation. Este proceso automatizado creará más de 20 recursos de AWS en cuestión de minutos.
+### Paso 2: Lanzar la pila de CloudFormation (10 min)
+
+Ahora desplegará toda la arquitectura de alta disponibilidad de TechShop utilizando AWS CloudFormation. Este proceso automatizado creará ~25 recursos de AWS en cuestión de minutos.
 
 1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `CloudFormation` y haga clic en el servicio **AWS CloudFormation** que aparece en los resultados.
 
@@ -198,18 +200,23 @@ Ahora desplegará toda la infraestructura del Portal del Ciudadano utilizando AW
 4. En la pantalla "Crear pila", en la sección "Especificar plantilla":
    - Seleccione la opción **Cargar un archivo de plantilla**
    - Haga clic en el botón **Elegir archivo**
-   - Navegue hasta la ubicación donde descargó el archivo `TC-Portal-HA-Lab.yaml` en su computadora
+   - Navegue hasta la ubicación donde descargó el archivo `TechShop-HA-Lab.yaml` en su computadora
    - Seleccione el archivo y haga clic en **Abrir**
    - Haga clic en el botón **Siguiente** en la parte inferior de la pantalla
 
 5. En la pantalla "Especificar detalles de la pila", configure los siguientes parámetros:
-   - **Nombre de la pila**: `[Iniciales]-TC-Portal`
-     - Reemplace `[Iniciales]` con sus iniciales personales (por ejemplo, si su nombre es Juan Pérez, use `JP-TC-Portal`)
+   - **Nombre de la pila**: `techshop-ha-{nombre-participante}`
+     - Reemplace `{nombre-participante}` con su nombre (por ejemplo, `techshop-ha-carlos`)
      - Este nombre identifica sus recursos en el entorno compartido
-   - **EmailAlerts**: Ingrese su dirección de correo electrónico personal
-     - Esta dirección recibirá las notificaciones de alertas del sistema
-     - Asegúrese de usar un correo al que tenga acceso inmediato
+   - **VpcId**: Seleccione la VPC creada por el instructor en el menú desplegable
+     - Busque la VPC que contenga el nombre de la pila del instructor
+   - **PublicSubnetAId**: Seleccione la subred pública en us-east-1a
+   - **PublicSubnetBId**: Seleccione la subred pública en us-east-1b
+   - **PrivateSubnetAId**: Seleccione la subred privada en us-east-1a
+   - **PrivateSubnetBId**: Seleccione la subred privada en us-east-1b
    - Haga clic en **Siguiente**
+
+⚠️ **Importante**: Asegúrese de seleccionar las subredes correctas. Las subredes públicas se utilizan para el ALB y las instancias EC2, mientras que las subredes privadas se utilizan para EFS y RDS. Si selecciona subredes incorrectas, la pila fallará durante la creación.
 
 6. En la pantalla "Configurar opciones de la pila":
    - Deje todos los valores por defecto sin modificar
@@ -220,22 +227,24 @@ Ahora desplegará toda la infraestructura del Portal del Ciudadano utilizando AW
    - Revise el resumen de la configuración de su pila
    - Desplácese hasta el final de la página
    - En la sección "Capacidades", marque la casilla que dice:
-     - ☑ **Reconozco que AWS CloudFormation podría crear recursos de IAM con nombres personalizados**
-   - Esta confirmación es necesaria porque la plantilla crea roles y políticas de IAM para Lambda y EC2
+     - **Reconozco que AWS CloudFormation podría crear recursos de IAM con nombres personalizados**
+   - Esta confirmación es necesaria porque la plantilla crea un rol IAM y un perfil de instancia para que las instancias EC2 accedan a S3 y CloudWatch
    - Haga clic en el botón naranja **Enviar** para iniciar el despliegue
 
-⏱️ **Nota**: CloudFormation comenzará a crear los recursos inmediatamente. El proceso completo tomará aproximadamente 15-20 minutos, principalmente debido a la base de datos RDS Multi-AZ que requiere aprovisionamiento en dos centros de datos.
+⚠️ **Advertencia**: Si no marca la casilla de capacidades IAM, CloudFormation rechazará la creación de la pila con el error `Requires capabilities: [CAPABILITY_NAMED_IAM]`. Si esto ocurre, simplemente regrese y marque la casilla.
 
 **✓ Verificación**: Confirme que:
-- La pila aparece en la lista de pilas de CloudFormation
+- La pila `techshop-ha-{nombre-participante}` aparece en la lista de pilas de CloudFormation
 - El estado de la pila muestra **CREATE_IN_PROGRESS** (en color azul)
-- El nombre de su pila es `[Iniciales]-TC-Portal` con sus iniciales correctas
+- El nombre de su pila sigue el formato `techshop-ha-{nombre-participante}` con su nombre correcto
 
-### Paso 3: Monitorear eventos de la pila y confirmar suscripción de correo
+⚠️ **Nota sobre seguridad en producción**: En este laboratorio, el grupo de seguridad del ALB (SG-ALB) permite tráfico HTTP/HTTPS desde cualquier origen (0.0.0.0/0). En una arquitectura de producción, se restringiría el inbound del ALB exclusivamente a los rangos de IP de CloudFront usando el AWS-managed prefix list `com.amazonaws.global.cloudfront.origin-facing`, garantizando que solo CloudFront pueda comunicarse con el ALB.
 
-Ahora que CloudFormation está creando su infraestructura, observará en tiempo real cómo los recursos se aprovisionan en un orden lógico y confirmará su suscripción al sistema de alertas.
+### Paso 3: Monitorear eventos de la pila (10 min)
 
-1. Permanezca en la consola de CloudFormation y asegúrese de que su pila `[Iniciales]-TC-Portal` esté seleccionada.
+Ahora que CloudFormation está creando su infraestructura, observará en tiempo real cómo los ~25 recursos se aprovisionan en un orden lógico determinado por sus dependencias.
+
+1. Permanezca en la consola de CloudFormation y asegúrese de que su pila `techshop-ha-{nombre-participante}` esté seleccionada.
 
 2. Haga clic en la pestaña **Eventos** ubicada en la parte inferior de la pantalla.
 
@@ -246,649 +255,464 @@ Ahora que CloudFormation está creando su infraestructura, observará en tiempo 
    - Los recursos completados muestran el estado **CREATE_COMPLETE** (en color verde)
    - Refresque periódicamente para ver cómo los recursos avanzan de `CREATE_IN_PROGRESS` a `CREATE_COMPLETE`
 
-**💡 Tip del instructor - Orden lógico de creación:**
+5. Observe el orden lógico de creación de los recursos. CloudFormation determina automáticamente este orden leyendo las dependencias en la plantilla:
+   - **Primero**: Grupos de seguridad (SG-ALB, SG-EC2, SG-RDS, SG-EFS) — dependen solo de la VPC
+   - **Segundo**: Recursos de almacenamiento (EFS FileSystem, S3 Bucket) y red (ALB, Target Group) — dependen de los grupos de seguridad y subredes
+   - **Tercero**: Mount targets de EFS, RDS Multi-AZ, Launch Template — dependen de los recursos anteriores
+   - **Cuarto**: Auto Scaling Group — depende del Launch Template, Target Group y mount targets de EFS
+   - **Quinto**: CloudFront Distribution, WAF WebACL — dependen del ALB y S3
+   - **Sexto**: CloudWatch Dashboard y Alarmas — dependen del ASG, ALB y RDS
 
-Observe cómo CloudFormation crea los recursos en un orden específico:
-1. Primero crea la **VPC** (red virtual)
-2. Luego crea las **Subnets** (subredes dentro de la VPC)
-3. Después crea los **Security Groups** (grupos de seguridad que dependen de la VPC)
-4. Finalmente crea las **instancias EC2** (que necesitan las subnets y security groups)
+⏱️ **Nota**: La base de datos Amazon RDS configurada en modo Multi-AZ tomará aproximadamente **15 minutos** en completar su creación. Esto se debe a que AWS debe aprovisionar servidores en dos zonas de disponibilidad diferentes y configurar la replicación síncrona entre ellos.
 
-CloudFormation determina automáticamente este orden leyendo las dependencias en el código de la plantilla. Usted no tuvo que especificar manualmente "primero crea esto, luego aquello" — el sistema lo calculó por sí mismo.
+⏱️ **Nota**: La distribución de Amazon CloudFront tomará aproximadamente **5 minutos** en completar su propagación a las ubicaciones de borde globales.
 
-⏱️ **Importante - Tiempo de espera para RDS Multi-AZ**: La base de datos Amazon RDS configurada en modo Multi-AZ tomará aproximadamente **10 a 15 minutos** en completar su creación. Esto se debe a que AWS debe aprovisionar servidores físicos en dos centros de datos diferentes y configurar la replicación síncrona entre ellos para garantizar la tolerancia a fallos.
+6. Mientras espera que la pila se complete, puede hacer clic en la pestaña **Recursos** para ver la lista completa de recursos que CloudFormation está creando. Observe cómo cada recurso tiene un identificador lógico (nombre en la plantilla) y un identificador físico (ID real del recurso en AWS).
 
-**Mientras espera que la pila se complete:**
-
-5. Abra su cliente de correo electrónico (en una nueva pestaña del navegador o aplicación de correo).
-
-6. Busque en su bandeja de entrada un correo con el asunto **"AWS Notification - Subscription Confirmation"**.
-
-7. Si no encuentra el correo en la bandeja de entrada principal, **revise su carpeta de Spam o Correo no deseado** — los correos de confirmación de AWS a veces son filtrados por los sistemas de correo.
-
-8. Abra el correo de confirmación y localice el enlace que dice **"Confirm subscription"** (Confirmar suscripción).
-
-9. Haga clic en el enlace **"Confirm subscription"** — esto abrirá una página web de AWS confirmando que su suscripción al tema SNS ha sido activada exitosamente.
-
-⚠️ **Advertencia crítica**: Si no confirma su suscripción de correo electrónico, **NO recibirá las alertas de tráfico** cuando el sistema detecte picos de actividad en el portal. La confirmación es obligatoria para que Amazon SNS pueda enviarle notificaciones.
+7. Espere hasta que el estado de la pila cambie a **CREATE_COMPLETE** (en color verde) en la parte superior de la pantalla. El proceso completo tomará aproximadamente 15-20 minutos.
 
 **✓ Verificación**: Confirme que:
-- Los eventos de CloudFormation muestran múltiples recursos con estado **CREATE_COMPLETE**
-- Puede observar el orden lógico de creación (VPC → Subnets → Security Groups → EC2)
-- Ha recibido y confirmado el correo de suscripción de AWS (la página de confirmación muestra "Subscription confirmed!")
-- La pila continúa en estado **CREATE_IN_PROGRESS** mientras se completan los recursos restantes (especialmente RDS)
+- La pestaña **Eventos** muestra múltiples recursos con estado **CREATE_COMPLETE**
+- Puede observar el orden lógico de creación (Security Groups, Storage, Compute, CDN, Monitoring)
+- La pila alcanzó el estado **CREATE_COMPLETE** (en color verde)
+- La pestaña **Recursos** muestra ~25 recursos creados exitosamente
 
 ---
 
-## Fase 2: Alta Disponibilidad y Seguridad (30 min)
+## Fase 2: Alta Disponibilidad y Almacenamiento (25 min)
 
-### Paso 4: Acceder al portal
+En esta fase, verificará que la arquitectura de TechShop está realmente preparada para resistir fallos. Accederá a la aplicación, inspeccionará los componentes de almacenamiento compartido y base de datos, y simulará un fallo de servidor para comprobar la recuperación automática.
 
-Una vez que CloudFormation haya completado el despliegue de toda la infraestructura, accederá al Portal del Ciudadano a través de la URL del Application Load Balancer para confirmar que el sistema está funcionando correctamente.
+### Paso 4: Acceder a TechShop via CloudFront (5 min)
 
-1. En la consola de CloudFormation, asegúrese de que su pila `[Iniciales]-TC-Portal` esté seleccionada.
+Ahora que la pila se ha creado exitosamente, accederá a la tienda TechShop a través de la URL de CloudFront proporcionada en las salidas de la pila.
 
-2. Verifique que el estado de la pila en la parte superior muestre **CREATE_COMPLETE** (en color verde).
-   - Si el estado aún muestra **CREATE_IN_PROGRESS**, espere unos minutos más y refresque la página
-   - La creación completa puede tomar hasta 20 minutos debido a la base de datos RDS Multi-AZ
+1. En la consola de CloudFormation, asegúrese de que su pila `techshop-ha-{nombre-participante}` esté seleccionada.
 
-3. Una vez que la pila esté en estado **CREATE_COMPLETE**, haga clic en la pestaña **Salidas** ubicada en la parte inferior de la pantalla.
+2. Haga clic en la pestaña **Salidas** ubicada en la parte inferior de la pantalla.
 
-4. En la tabla de salidas, localice la fila con la clave **PortalURL**.
+3. Localice la salida con clave **CloudFrontURL**. Esta es la URL pública de su tienda TechShop, servida a través de la red de distribución de contenido de CloudFront.
 
-5. Haga clic en el enlace de la URL que aparece en la columna **Valor** — este es el nombre DNS del Application Load Balancer.
-   - La URL tendrá un formato similar a: `http://[Iniciales]-TC-Portal-alb-1234567890.us-east-1.elb.amazonaws.com`
-   - El enlace abrirá el portal en una nueva pestaña de su navegador
+4. Haga clic en el enlace de la columna **Valor** (la URL que comienza con `https://`) o cópiela y péguela en una nueva pestaña de su navegador.
 
-6. Espere unos segundos mientras el navegador carga la página del Portal del Ciudadano.
+5. Verifique que la página principal de TechShop se carga correctamente en su navegador. Debería ver la página de inicio con el branding de TechShop, la navegación y los productos destacados.
 
-7. Valide visualmente que la página principal del portal se carga correctamente:
-   - Debe ver el encabezado con el título "Portal del Ciudadano"
-   - Debe ver la interfaz del portal con opciones de navegación
-   - Debe ver enlaces a las secciones "Asistente Constitucional" y "Resoluciones"
+⏱️ **Nota**: Si la página no carga inmediatamente, espere 1-2 minutos y refresque. CloudFront puede tardar unos minutos adicionales en propagar completamente la configuración a todas las ubicaciones de borde.
 
 **✓ Verificación**: Confirme que:
-- La pila de CloudFormation muestra el estado **CREATE_COMPLETE**
-- La pestaña **Salidas** contiene la clave **PortalURL** con una URL válida
-- El Portal del Ciudadano se carga correctamente en su navegador
-- La interfaz del portal muestra el branding institucional y las opciones de navegación
+- La pestaña **Salidas** muestra la clave `CloudFrontURL` con una URL de CloudFront
+- La página principal de TechShop se carga correctamente en el navegador
+- La URL en la barra de direcciones corresponde al dominio de CloudFront (formato `https://dXXXXXXXXXXXXX.cloudfront.net`)
 
-**💡 Tip del instructor**: El Application Load Balancer que acaba de utilizar está distribuyendo automáticamente el tráfico entre dos instancias EC2 ubicadas en diferentes zonas de disponibilidad. Aunque usted solo ve una URL, detrás de escena hay dos servidores web trabajando en paralelo para garantizar alta disponibilidad. Además, antes de que el tráfico llegue al ALB, AWS WAF inspecciona cada solicitud HTTP para bloquear ataques web comunes. En el siguiente paso, inspeccionará esta capa de seguridad perimetral.
+### Paso 5: Inspeccionar EFS (5 min)
 
-### Paso 5: Inspeccionar AWS WAF
+Amazon Elastic File System (EFS) proporciona almacenamiento compartido persistente que todas las instancias EC2 del Auto Scaling Group montan simultáneamente. Esto garantiza que cuando Auto Scaling lanza una nueva instancia, esta tiene acceso inmediato a los archivos de la aplicación web sin necesidad de copiarlos o sincronizarlos.
 
-Ahora inspeccionará la capa de seguridad perimetral del Portal del Ciudadano. AWS WAF (Web Application Firewall) actúa como un escudo que filtra todo el tráfico HTTP antes de que llegue al Application Load Balancer, bloqueando automáticamente patrones de ataque comunes.
+1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `EFS` y haga clic en el servicio **Amazon Elastic File System** que aparece en los resultados.
 
-1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `WAF` y haga clic en el servicio **AWS WAF** que aparece en los resultados.
+2. En la lista de sistemas de archivos, localice el sistema de archivos creado por su pila. Puede identificarlo por el nombre que contiene `techshop-ha-{nombre-participante}`.
 
-2. En el panel de navegación de la izquierda, haga clic en **Web ACLs**.
+3. Haga clic en el **ID del sistema de archivos** para ver sus detalles.
 
-3. En la lista de Web ACLs, localice y seleccione la Web ACL creada por su pila de CloudFormation:
-   - El nombre de la Web ACL incluirá su pila de CloudFormation (por ejemplo, `[Iniciales]-TC-Portal-waf-acl`)
-   - Haga clic en el nombre de la Web ACL para abrir sus detalles
+4. En la página de detalles del sistema de archivos, observe las siguientes propiedades:
+   - **Cifrado**: Debe mostrar **Habilitado** — los datos se cifran en reposo automáticamente
+   - **Modo de rendimiento**: Debe mostrar **General Purpose** (generalPurpose) — optimizado para operaciones de baja latencia
 
-4. En la página de detalles de la Web ACL, haga clic en la pestaña **Reglas**.
+5. Haga clic en la pestaña **Red** para inspeccionar los mount targets (puntos de montaje).
 
-5. En la lista de reglas, identifique el grupo de reglas administrado **AWSManagedRulesCommonRuleSet**:
-   - Este es un conjunto de reglas mantenido y actualizado por expertos de seguridad de AWS
-   - Protege contra las vulnerabilidades más comunes del OWASP Top 10, incluyendo inyección SQL, cross-site scripting (XSS) y otros patrones de ataque web
+6. Verifique que existen **2 mount targets**, uno en cada zona de disponibilidad:
+   - Un mount target en la subred de la zona **us-east-1a**
+   - Un mount target en la subred de la zona **us-east-1b**
 
-6. Navegue a la pestaña **Recursos de AWS asociados**.
+7. Para cada mount target, observe la columna **Grupo de seguridad**. Haga clic en el ID del grupo de seguridad para verificar que permite tráfico NFS:
+   - **Regla de entrada**: TCP puerto **2049** (NFS) desde el grupo de seguridad de las instancias EC2
 
-7. En la lista de recursos asociados, confirme que la Web ACL está asociada al Application Load Balancer de su pila de CloudFormation.
-
-**💡 Tip del instructor - Seguridad perimetral automática:**
-
-AWS WAF actúa como un escudo de seguridad que inspecciona cada solicitud HTTP antes de que llegue al Portal del Ciudadano. Cada vez que un ciudadano, abogado o periodista accede al portal, WAF analiza la solicitud buscando patrones de ataque conocidos y bloquea automáticamente las solicitudes maliciosas sin que el equipo de desarrollo tenga que escribir código de seguridad personalizado.
-
-El grupo de reglas administrado **AWSManagedRulesCommonRuleSet** es mantenido y actualizado continuamente por expertos de seguridad de AWS. Esto significa que cuando se descubren nuevas vulnerabilidades o técnicas de ataque, AWS actualiza las reglas automáticamente para proteger su portal sin que usted tenga que hacer nada.
+**Justificación de alta disponibilidad**: EFS proporciona almacenamiento compartido persistente accesible desde todas las instancias EC2 simultáneamente. Cuando Auto Scaling lanza una nueva instancia (por escalado o reemplazo de una instancia fallida), esta monta el sistema de archivos EFS y tiene acceso inmediato a todos los archivos de la aplicación web. No se requiere copia ni sincronización de datos, lo que reduce el tiempo de recuperación a segundos.
 
 **✓ Verificación**: Confirme que:
-- Localizó correctamente la Web ACL de AWS WAF creada por su pila de CloudFormation
-- La pestaña **Reglas** muestra el grupo de reglas administrado **AWSManagedRulesCommonRuleSet**
-- La pestaña **Recursos de AWS asociados** confirma que la Web ACL está asociada al Application Load Balancer
+- El sistema de archivos EFS muestra cifrado **Habilitado** y modo de rendimiento **General Purpose**
+- Existen **2 mount targets** en las zonas us-east-1a y us-east-1b
+- El grupo de seguridad de los mount targets permite tráfico TCP en el puerto **2049** (NFS)
 
-### Paso 6: Simular fallo de servidor
+### Paso 6: Simular fallo de servidor (10 min)
 
-Ahora realizará una prueba crítica de alta disponibilidad: terminará deliberadamente una de las instancias EC2 del portal para simular un fallo de servidor y observará cómo el Application Load Balancer mantiene el sitio en línea mientras el Auto Scaling Group recupera automáticamente la capacidad.
+Esta es la prueba más importante del laboratorio. Terminará manualmente una de las instancias EC2 para simular un fallo de servidor y verificará que TechShop permanece en línea gracias a la redundancia del Auto Scaling Group y el balanceo de carga del ALB.
 
-1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `EC2` y haga clic en el servicio **EC2** que aparece en los resultados.
+1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `EC2` y haga clic en el servicio **Amazon EC2** que aparece en los resultados.
 
 2. En el panel de navegación de la izquierda, haga clic en **Instancias**.
 
-3. En la lista de instancias, identifique las dos instancias EC2 del Portal del Ciudadano:
-   - Ambas instancias tendrán nombres que incluyen su pila de CloudFormation (por ejemplo, `[Iniciales]-TC-Portal-...`)
-   - Observe la columna **Zona de disponibilidad** — confirme que las dos instancias están en zonas de disponibilidad diferentes
-   - Por ejemplo, una instancia puede estar en `us-east-1a` y la otra en `us-east-1b`
-   - Esta distribución Multi-AZ es clave para la alta disponibilidad
+3. Identifique las instancias EC2 que pertenecen a su Auto Scaling Group. Puede reconocerlas porque su nombre contiene `techshop-ha-{nombre-participante}`. Debería ver **2 instancias** en estado **En ejecución**.
 
-4. Seleccione **solo una** de las dos instancias haciendo clic en la casilla de verificación a la izquierda del nombre de la instancia.
+4. Seleccione **una** de las dos instancias haciendo clic en la casilla de verificación a su izquierda.
 
-5. Con la instancia seleccionada, haga clic en el menú desplegable **Estado de la instancia** ubicado en la parte superior de la pantalla.
+5. Termine la instancia seleccionada:
+   - Haga clic en el menú **Estado de la instancia** en la parte superior
+   - Seleccione **Terminar instancia**
+   - En el cuadro de confirmación, haga clic en **Terminar**
 
-6. En el menú que aparece, seleccione **Terminar instancia**.
+⚠️ **Importante**: Termine solo UNA instancia. La segunda instancia debe permanecer activa para mantener el servicio mientras Auto Scaling lanza el reemplazo.
 
-7. En el cuadro de diálogo de confirmación que aparece, haga clic en el botón **Terminar** para confirmar la acción.
-   - La instancia comenzará el proceso de terminación inmediatamente
-   - El estado de la instancia cambiará a **Shutting down** (Apagándose) y luego a **Terminated** (Terminada)
+6. **Inmediatamente** después de terminar la instancia, regrese a la pestaña del navegador donde tiene abierta la tienda TechShop (la URL de CloudFront) y refresque la página varias veces.
 
-8. **Inmediatamente** después de terminar la instancia, regrese a la pestaña de su navegador donde tiene abierto el Portal del Ciudadano.
+7. Observe que **el sitio permanece en línea**. El ALB detecta automáticamente que la instancia terminada ya no responde a los health checks y redirige todo el tráfico a la instancia restante.
 
-9. Refresque la página del portal múltiples veces (presione F5 o haga clic en el botón de actualizar del navegador).
+8. Ahora verifique que Auto Scaling está lanzando una instancia de reemplazo:
+   - En la barra de búsqueda global, escriba `Auto Scaling` y haga clic en **Grupos de Auto Scaling**
+   - Localice el grupo de Auto Scaling de su pila (contiene `techshop-ha-{nombre-participante}`)
+   - Haga clic en el nombre del grupo para ver sus detalles
+   - En la pestaña **Administración de instancias**, observe que Auto Scaling está lanzando una nueva instancia para mantener la capacidad deseada de 2
 
-10. Observe que **el portal continúa funcionando normalmente** — la página se carga sin errores.
+⏱️ **Nota**: Auto Scaling detectará el fallo y lanzará una instancia de reemplazo en aproximadamente **3-5 minutos**. La nueva instancia montará automáticamente el sistema de archivos EFS y tendrá acceso inmediato a los archivos de la aplicación web.
 
-**💡 Explicación técnica**: El portal sigue funcionando porque el Application Load Balancer detectó automáticamente que una de las instancias dejó de responder a las verificaciones de salud (health checks). En cuestión de segundos, el ALB dejó de enviar tráfico a la instancia terminada y comenzó a dirigir el 100% de las solicitudes a la instancia sobreviviente en la otra zona de disponibilidad. Los ciudadanos que acceden al portal no experimentan ninguna interrupción del servicio.
-
-11. Regrese a la consola de EC2 con la lista de instancias.
-
-12. Espere aproximadamente **3 a 5 minutos** ⏱️ y refresque periódicamente la vista de instancias haciendo clic en el botón de actualización (icono circular con flechas) en la esquina superior derecha.
-
-13. Observe cómo el Auto Scaling Group detecta que la capacidad deseada (2 instancias) no se está cumpliendo y **lanza automáticamente una nueva instancia** para reemplazar la que terminó.
-
-14. Observe la nueva instancia en la lista:
-   - Inicialmente aparecerá con el estado **Pending** (Pendiente) mientras se aprovisiona
-   - Después de 1-2 minutos, el estado cambiará a **Running** (En ejecución)
-   - Finalmente, las verificaciones de salud del ALB confirmarán que la instancia está lista para recibir tráfico
+9. Regrese a **EC2 > Instancias** y espere hasta que vea nuevamente **2 instancias** en estado **En ejecución**. Puede hacer clic en el botón de actualización periódicamente para ver el progreso.
 
 **✓ Verificación**: Confirme que:
-- Identificó correctamente las dos instancias EC2 en diferentes zonas de disponibilidad
-- Terminó exitosamente una de las instancias (estado **Terminated**)
-- El portal continuó funcionando sin interrupciones después de terminar la instancia
-- El Auto Scaling Group lanzó automáticamente una nueva instancia de reemplazo
-- La nueva instancia transicionó de **Pending** a **Running**
-- Ahora tiene nuevamente dos instancias en estado **Running** en diferentes zonas de disponibilidad
+- Después de terminar una instancia, la tienda TechShop **permaneció en línea** al refrescar la página de CloudFront
+- El grupo de Auto Scaling detectó la instancia faltante y lanzó una nueva instancia de reemplazo
+- Después de unos minutos, la lista de instancias EC2 muestra nuevamente **2 instancias** en estado **En ejecución**
 
-**💡 Tip del instructor**: Lo que acaba de presenciar es el corazón de la alta disponibilidad en AWS. El sistema tiene múltiples capas de resiliencia:
-1. **Application Load Balancer**: Detecta fallos en segundos y redirige el tráfico automáticamente
-2. **Multi-AZ**: Las instancias están en centros de datos físicamente separados — si un centro de datos completo falla, el otro continúa operando
-3. **Auto Scaling Group**: Monitorea constantemente la capacidad y reemplaza instancias fallidas sin intervención humana
+### Paso 7: Inspeccionar RDS Multi-AZ (5 min)
 
-Esta arquitectura garantiza que el Portal del Ciudadano permanezca accesible 24/7, incluso durante fallos de hardware, mantenimiento de infraestructura o picos masivos de tráfico.
-
-### Paso 7: Inspeccionar RDS Multi-AZ y Secrets Manager
-
-Ahora inspeccionará la configuración de la base de datos relacional del Portal del Ciudadano para comprender cómo el diseño Multi-AZ protege los datos críticos contra fallos masivos de infraestructura, y cómo AWS Secrets Manager gestiona las credenciales de la base de datos de forma segura y automatizada.
+Amazon RDS Multi-AZ mantiene una réplica síncrona de la base de datos en una zona de disponibilidad diferente. Si la instancia primaria falla, AWS realiza un failover automático a la réplica standby sin intervención manual y sin pérdida de datos.
 
 1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `RDS` y haga clic en el servicio **Amazon RDS** que aparece en los resultados.
 
 2. En el panel de navegación de la izquierda, haga clic en **Bases de datos**.
 
-3. En la lista de bases de datos, localice y seleccione la instancia de base de datos creada para el Portal del Ciudadano:
-   - El nombre de la base de datos incluirá su pila de CloudFormation (por ejemplo, `[Iniciales]-TC-Portal-db-...`)
-   - Haga clic en el nombre de la base de datos para abrir sus detalles
+3. Localice la instancia de base de datos creada por su pila. Puede identificarla porque su nombre contiene `techshop-ha-{nombre-participante}`.
 
-4. En la página de detalles de la base de datos, haga clic en la pestaña **Configuración** ubicada en la parte superior.
+4. Haga clic en el **identificador de la base de datos** para ver sus detalles.
 
-5. Desplácese por la sección de configuración hasta localizar el campo **Multi-AZ**.
+5. En la pestaña **Configuración**, localice el campo **Implementación Multi-AZ** y confirme que muestra **Sí**.
 
-6. Confirme que el valor del campo **Multi-AZ** es **Sí**.
+6. Observe también los siguientes detalles de configuración:
+   - **Motor**: MySQL
+   - **Clase de instancia de base de datos**: db.t3.micro
+   - **Almacenamiento**: 20 GiB gp2
 
-**💡 Tip del instructor - Tolerancia a fallos de datos críticos:**
-
-Lo que acaba de confirmar es una de las configuraciones más importantes para sistemas de misión crítica. La base de datos RDS Multi-AZ mantiene una réplica síncrona de todos los datos del portal en un centro de datos físicamente separado.
-
-Esto significa que si el centro de datos primario de AWS sufre un corte de energía masivo, un desastre natural o cualquier fallo catastrófico de infraestructura, **el portal no pierde ni un solo expediente**. La réplica síncrona en la otra instalación física contiene una copia exacta y actualizada de todos los datos.
-
-**Failover automático sin intervención humana:**
-
-Si la base de datos primaria falla, AWS detecta automáticamente el problema y redirige todo el tráfico de base de datos a la réplica en la otra zona de disponibilidad. Este proceso de failover toma típicamente entre 60 y 120 segundos y ocurre sin que los administradores del sistema tengan que hacer nada manualmente.
-
-Durante esos 1-2 minutos, las aplicaciones pueden experimentar errores de conexión temporales, pero una vez completado el failover, el portal continúa operando normalmente con la réplica promovida como nueva base de datos primaria.
-
-**Diferencia con el Auto Scaling de EC2:**
-
-Observe la diferencia con lo que vio en el Paso 6:
-- **EC2 con Auto Scaling**: Cuando terminó una instancia, el ASG lanzó una nueva instancia vacía y la configuró desde cero (3-5 minutos)
-- **RDS Multi-AZ**: La réplica ya está ejecutándose, sincronizada y lista — solo necesita ser promovida (1-2 minutos)
-
-Esta es la razón por la cual RDS Multi-AZ es crítico para bases de datos: no puede permitirse perder datos ni esperar varios minutos para reconstruir un servidor de base de datos desde cero cuando cada segundo cuenta para el acceso ciudadano a la justicia.
-
-**Inspeccionar AWS Secrets Manager:**
-
-Ahora verificará cómo se gestionan las credenciales de la base de datos de forma segura mediante AWS Secrets Manager.
-
-7. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `Secrets Manager` y haga clic en el servicio **AWS Secrets Manager** que aparece en los resultados.
-
-8. En la lista de secretos, localice el secreto creado por su pila de CloudFormation:
-   - El nombre del secreto incluirá su pila de CloudFormation (por ejemplo, `[Iniciales]-TC-Portal-rds-secret`)
-   - Haga clic en el nombre del secreto para abrir sus detalles
-
-9. En la página de detalles del secreto, desplácese hasta la sección **Valor del secreto**.
-
-10. Haga clic en el botón **Recuperar valor del secreto** para ver las credenciales auto-generadas.
-
-11. Observe que la contraseña es una cadena compleja auto-generada:
-    - La contraseña contiene una combinación de letras mayúsculas, minúsculas, números y caracteres especiales
-    - Esta contraseña fue generada automáticamente durante el despliegue de CloudFormation
-    - En ningún momento esta contraseña fue escrita manualmente ni fue visible en la plantilla de CloudFormation
-
-**💡 Tip del instructor - Gestión segura de credenciales:**
-
-AWS Secrets Manager resuelve un problema crítico de seguridad en la gestión de credenciales. Tradicionalmente, las contraseñas de bases de datos se almacenaban en archivos de configuración, variables de entorno o incluso directamente en el código fuente — prácticas que representan un riesgo de seguridad significativo.
-
-Con Secrets Manager integrado en la arquitectura del portal:
-- La contraseña de la base de datos se **genera automáticamente** durante el despliegue, sin intervención humana
-- La contraseña se **almacena cifrada** en AWS Secrets Manager, no en texto plano
-- La contraseña puede **rotarse periódicamente** sin modificar el código de la aplicación ni la plantilla de CloudFormation
-
-**💡 Explicación técnica - Referencia dinámica en CloudFormation:**
-
-La plantilla de Infraestructura como Código utiliza la referencia dinámica `resolve:secretsmanager` de CloudFormation para inyectar la contraseña en la base de datos RDS en tiempo de despliegue. Esto significa que el valor real de la contraseña nunca aparece en la plantilla YAML — CloudFormation resuelve la referencia automáticamente al momento de crear los recursos.
+**Justificación de alta disponibilidad**: RDS Multi-AZ mantiene una réplica síncrona de la base de datos en otra zona de disponibilidad. "Síncrona" significa que cada escritura en la base de datos primaria se replica inmediatamente a la standby antes de confirmar la transacción, garantizando cero pérdida de datos. Si la instancia primaria experimenta un fallo (hardware, red o mantenimiento), AWS realiza un failover automático a la réplica standby en aproximadamente 60-120 segundos, sin intervención manual y sin necesidad de cambiar la cadena de conexión de la aplicación.
 
 **✓ Verificación**: Confirme que:
-- Localizó correctamente la instancia de base de datos RDS del portal
-- La pestaña **Configuración** muestra el campo **Multi-AZ** con valor **Sí**
-- Comprende que existe una réplica síncrona en otra zona de disponibilidad
-- Comprende que el failover automático ocurre sin intervención manual en caso de fallo
-- Localizó el secreto en AWS Secrets Manager creado por la pila de CloudFormation
-- Pudo recuperar el valor del secreto y observar la contraseña auto-generada
-- Comprende que la contraseña nunca fue visible en la plantilla de CloudFormation
-
-### Paso 8: Inspeccionar roles IAM
-
-Ahora inspeccionará los roles de IAM (Identity and Access Management) creados por la pila de CloudFormation para comprender cómo se aplica el principio de mínimo privilegio en la arquitectura del Portal del Ciudadano. Cada servicio recibe únicamente los permisos que necesita para realizar su función específica.
-
-1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `IAM` y haga clic en el servicio **IAM** que aparece en los resultados.
-
-2. En el panel de navegación de la izquierda, haga clic en **Roles**.
-
-3. En la barra de búsqueda de roles, escriba el nombre de su pila de CloudFormation (por ejemplo, `[Iniciales]-TC-Portal`) para filtrar los roles creados por su pila.
-
-4. Identifique los dos roles principales creados por la pila:
-   - Un rol para las **instancias EC2** (por ejemplo, `[Iniciales]-TC-Portal-EC2InstanceRole-...`)
-   - Un rol para la **función Lambda** (por ejemplo, `[Iniciales]-TC-Portal-LambdaExecutionRole-...`)
-
-**Inspeccionar el rol de EC2:**
-
-5. Haga clic en el nombre del rol de EC2 para abrir sus detalles.
-
-6. En la sección **Políticas de permisos**, revise las políticas adjuntas al rol y observe los permisos otorgados:
-   - Permisos para **invocación de Amazon Bedrock** (`bedrock:InvokeModel`) — permite a las instancias EC2 enviar preguntas al modelo de IA generativa para el chatbot constitucional
-   - Permisos para **síntesis de voz con Amazon Polly** (`polly:SynthesizeSpeech`) — permite a las instancias EC2 convertir texto de resoluciones a audio para ciudadanos con discapacidad visual
-
-7. Regrese a la lista de roles haciendo clic en **Roles** en la ruta de navegación superior.
-
-**Inspeccionar el rol de Lambda:**
-
-8. Haga clic en el nombre del rol de Lambda para abrir sus detalles.
-
-9. En la sección **Políticas de permisos**, revise las políticas adjuntas al rol y observe los permisos otorgados:
-   - Permisos para **consumo de mensajes de Amazon SQS** (`sqs:ReceiveMessage`, `sqs:DeleteMessage`, `sqs:GetQueueAttributes`) — permite a la función Lambda leer y procesar mensajes de la cola de expedientes
-   - Permisos para **escritura en CloudWatch Logs** (`logs:CreateLogGroup`, `logs:CreateLogStream`, `logs:PutLogEvents`) — permite a la función Lambda registrar su actividad para monitoreo y auditoría
-
-**💡 Tip del instructor - Principio de mínimo privilegio:**
-
-Lo que acaba de observar es la aplicación del principio de mínimo privilegio, una de las mejores prácticas fundamentales de seguridad en AWS. Cada servicio recibe **solo los permisos que necesita** para realizar su función específica, y nada más:
-
-- Las instancias EC2 pueden invocar Bedrock y Polly, pero **no pueden** leer mensajes de SQS ni escribir en CloudWatch Logs directamente
-- La función Lambda puede consumir mensajes de SQS y escribir logs, pero **no puede** invocar Bedrock ni Polly
-
-Esta separación de permisos reduce el "radio de impacto" (blast radius) si algún componente es comprometido. Si un atacante logra acceder a una instancia EC2, solo podría interactuar con Bedrock y Polly — no tendría acceso a la cola de mensajes ni a otros servicios críticos.
-
-**💡 Explicación técnica - Instance Profile:**
-
-Las instancias EC2 acceden a Amazon Bedrock y Amazon Polly a través del rol IAM adjunto mediante un **instance profile**. Esto elimina completamente la necesidad de almacenar claves de acceso (API keys) en los servidores. Las credenciales temporales se rotan automáticamente por AWS, proporcionando un nivel de seguridad significativamente superior al uso de claves estáticas.
-
-**✓ Verificación**: Confirme que:
-- Localizó correctamente los roles IAM creados por su pila de CloudFormation
-- El rol de EC2 tiene permisos para Amazon Bedrock (invocación de modelos) y Amazon Polly (síntesis de voz)
-- El rol de Lambda tiene permisos para Amazon SQS (consumo de mensajes) y CloudWatch Logs (escritura de registros)
-- Comprende que cada servicio recibe solo los permisos necesarios para su función específica (principio de mínimo privilegio)
-- Comprende que las instancias EC2 usan un instance profile en lugar de claves API estáticas
+- La instancia de base de datos RDS muestra **Implementación Multi-AZ** con valor **Sí** en la pestaña de configuración
+- El motor de base de datos es **MySQL** con clase de instancia **db.t3.micro**
 
 ---
 
-## Fase 3: Arquitectura Orientada a Eventos (15 min)
+## Fase 3: Distribución de Contenido y Seguridad (20 min)
 
-### Paso 9: Publicar mensaje en SNS
+En esta fase, inspeccionará cómo CloudFront distribuye el contenido de TechShop a nivel global, cómo S3 almacena los activos estáticos con acceso restringido mediante Origin Access Control (OAC), cómo WAF protege la aplicación contra ataques web comunes, y verificará el funcionamiento del caching en el edge.
 
-Ahora iniciará el flujo de eventos automatizado del Portal del Ciudadano publicando un mensaje que simula la emisión de un nuevo fallo judicial. Este mensaje viajará automáticamente a través de la arquitectura orientada a eventos (SNS → SQS → Lambda) sin intervención manual.
+### Paso 8: Inspeccionar CloudFront (5 min)
 
-1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `SNS` y haga clic en el servicio **Amazon SNS** que aparece en los resultados.
+Amazon CloudFront es la red de distribución de contenido (CDN) que sirve como punto de entrada principal para los usuarios de TechShop. La distribución está configurada con dos orígenes: el ALB para contenido dinámico y el bucket S3 para contenido estático, cada uno con políticas de caché optimizadas para su tipo de contenido.
 
-2. En el panel de navegación de la izquierda, haga clic en **Temas**.
+1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `CloudFront` y haga clic en el servicio **Amazon CloudFront** que aparece en los resultados.
 
-3. En la lista de temas, localice y seleccione el tema SNS creado por su pila de CloudFormation:
-   - El nombre del tema incluirá su pila de CloudFormation (por ejemplo, `[Iniciales]-TC-Portal-alertas`)
-   - Haga clic en el nombre del tema para abrir sus detalles
+2. En la lista de distribuciones, localice la distribución creada por su pila. Puede identificarla porque su comentario u origen contiene el nombre de su pila `techshop-ha-{nombre-participante}`.
 
-4. En la página de detalles del tema, haga clic en el botón naranja **Publicar mensaje** ubicado en la esquina superior derecha.
+3. Haga clic en el **ID de la distribución** para ver sus detalles.
 
-5. En la pantalla "Publicar mensaje al tema", desplácese hasta la sección **Cuerpo del mensaje**.
+4. En la pestaña **Orígenes**, verifique que existen **2 orígenes** configurados:
+   - **Origen ALB (dinámico)**: El nombre de dominio del origen apunta al Application Load Balancer de su pila. Este origen sirve el contenido dinámico de la aplicación web (páginas HTML generadas por los servidores EC2).
+   - **Origen S3 con OAC (estático)**: El nombre de dominio del origen apunta al bucket S3 de su pila. Este origen sirve las imágenes de productos y activos estáticos. Observe que la columna **Acceso de origen** muestra el uso de Origin Access Control (OAC), lo que significa que solo CloudFront puede acceder al bucket S3.
 
-6. En el campo de texto del cuerpo del mensaje, escriba exactamente el siguiente texto:
+5. Haga clic en la pestaña **Comportamientos** para inspeccionar las reglas de enrutamiento de contenido. Verifique los siguientes comportamientos de caché:
 
-```
-Se ha emitido la resolución del Expediente N° 001-2026 sobre Habeas Corpus
-```
+   - **Comportamiento predeterminado** (`*`):
+     - **Origen**: ALB (contenido dinámico)
+     - **Política de caché**: CachingDisabled — el contenido dinámico no se almacena en caché porque puede cambiar con cada solicitud
+     - **Protocolo del visor**: redirect-to-https
 
-7. Deje todos los demás campos con sus valores por defecto (no es necesario especificar asunto ni atributos adicionales).
+   - **Comportamientos para contenido estático** (`/assets/*` y `/images/*`):
+     - **Origen**: S3 (contenido estático)
+     - **Política de caché**: CachingOptimized — el contenido estático se almacena en caché con TTL largo porque las imágenes y activos no cambian frecuentemente
+     - **Protocolo del visor**: redirect-to-https
 
-8. Desplácese hasta el final de la página y haga clic en el botón naranja **Publicar mensaje**.
-
-9. Observe la notificación de confirmación que aparece en la parte superior de la pantalla indicando que el mensaje fue publicado exitosamente.
-
-**✓ Verificación**: Confirme que:
-- Localizó correctamente el tema SNS de su pila de CloudFormation
-- Publicó el mensaje con el texto exacto especificado
-- Recibió la confirmación de que el mensaje fue publicado exitosamente
-
-**💡 Tip del instructor - Arquitectura desacoplada:**
-
-Lo que acaba de hacer es publicar un mensaje en un canal de comunicación (tema SNS) sin preocuparse por quién lo recibirá ni cómo se procesará. Esta es la esencia de las arquitecturas orientadas a eventos: los componentes del sistema están desacoplados.
-
-En este momento, el mensaje que publicó está siendo entregado automáticamente a dos destinos:
-1. **Su correo electrónico**: Recibirá una notificación por correo con el texto del mensaje (revise su bandeja de entrada)
-2. **La cola SQS**: El mensaje se almacenó automáticamente en la cola de procesamiento de expedientes
-
-Ninguno de estos destinos requirió que usted configurara manualmente la entrega — las suscripciones ya estaban definidas en la plantilla de CloudFormation. En el siguiente paso, inspeccionará cómo el mensaje llegó a la cola SQS.
-
-### Paso 10: Inspeccionar cola SQS y concepto de buffer
-
-Ahora inspeccionará la cola de mensajes de Amazon SQS para comprender cómo actúa como un amortiguador (buffer) que protege la infraestructura del portal contra picos masivos de procesamiento.
-
-1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `SQS` y haga clic en el servicio **Amazon SQS** que aparece en los resultados.
-
-2. En la lista de colas, localice la cola de procesamiento creada por su pila de CloudFormation:
-   - El nombre de la cola incluirá su pila de CloudFormation (por ejemplo, `[Iniciales]-TC-Portal-expedientes`)
-   - Haga clic en el nombre de la cola para abrir sus detalles
-
-3. En la página de detalles de la cola, observe la sección **Mensajes disponibles** en la parte superior:
-   - Si el mensaje aún está en la cola, verá el contador de mensajes disponibles
-   - Si el mensaje ya fue procesado por Lambda, el contador puede estar en 0
-
-**💡 Explicación técnica - Suscripción automática:**
-
-La plantilla de CloudFormation que desplegó ya configuró automáticamente la suscripción de esta cola SQS al tema SNS. Esto significa que cuando publicó el mensaje en el Paso 9, Amazon SNS lo entregó instantáneamente a la cola SQS sin que usted tuviera que configurar manualmente esta integración.
-
-Esta es otra ventaja de la Infraestructura como Código: las relaciones entre servicios se definen una vez en la plantilla y se replican automáticamente cada vez que se despliega.
-
-**💡 Tip del instructor - Concepto de buffer para protección contra picos:**
-
-Imagine el siguiente escenario crítico: el portal emite un fallo histórico sobre un tema controversial y publica simultáneamente **1,000 expedientes** relacionados con el caso. Si el sistema intentara procesar todos esos expedientes inmediatamente enviándolos directamente al servidor web o a la base de datos, la infraestructura colapsaría bajo la carga masiva.
-
-Aquí es donde Amazon SQS actúa como un amortiguador inteligente:
-
-1. **Recepción segura**: La cola SQS recibe y almacena de manera segura los 1,000 mensajes en cuestión de segundos, sin importar cuán rápido lleguen.
-
-2. **Procesamiento controlado**: La función Lambda (que verá en el siguiente paso) consume los mensajes de la cola a su propio ritmo, procesando quizás 10 o 20 expedientes por minuto según la capacidad disponible.
-
-3. **Sin pérdida de datos**: Ningún expediente se pierde. Todos los mensajes permanecen en la cola hasta que son procesados exitosamente. Si el procesamiento falla, el mensaje regresa automáticamente a la cola para reintentarse.
-
-4. **Escalabilidad independiente**: El sistema puede procesar los 1,000 expedientes en 1 hora o en 10 horas, dependiendo de la capacidad configurada, pero lo importante es que el sistema nunca colapsa y nunca pierde datos.
-
-**Contraste con arquitectura sin buffer:**
-
-Sin SQS, si 1,000 solicitudes llegaran simultáneamente al servidor web, ocurriría lo siguiente:
-- El servidor intentaría procesar todas las solicitudes al mismo tiempo
-- La memoria y CPU se saturarían
-- Las conexiones de base de datos se agotarían
-- El sistema colapsaría y rechazaría solicitudes
-- Los ciudadanos verían errores 500 o timeouts
-- Algunos expedientes podrían perderse
-
-Con SQS como buffer, el sistema absorbe el pico de tráfico sin inmutarse y procesa los expedientes de manera ordenada y confiable.
+**Justificación de alta disponibilidad**: CloudFront proporciona caching en ubicaciones de borde (edge locations) distribuidas a nivel mundial. Esto reduce la latencia para los usuarios al servir contenido desde la ubicación más cercana, y descarga los servidores de origen (ALB y EC2) al evitar que cada solicitud de contenido estático llegue hasta la infraestructura. Si un servidor de origen experimenta problemas temporales, CloudFront puede seguir sirviendo contenido estático desde su caché.
 
 **✓ Verificación**: Confirme que:
-- Localizó correctamente la cola SQS de su pila de CloudFormation
-- Comprende que la cola fue suscrita automáticamente al tema SNS por la plantilla de IaC
-- Comprende el concepto de buffer: SQS retiene mensajes y permite procesamiento al ritmo del sistema
-- Comprende cómo SQS protege contra colapsos durante picos masivos de tráfico (ejemplo de 1,000 expedientes)
+- La distribución de CloudFront muestra **2 orígenes**: uno apuntando al ALB y otro al bucket S3 con OAC
+- El comportamiento predeterminado (`*`) enruta al ALB con política **CachingDisabled**
+- Los comportamientos `/assets/*` y `/images/*` enrutan al S3 con política **CachingOptimized**
 
-### Paso 11: Verificar Lambda y CloudWatch
+### Paso 9: Inspeccionar S3 con OAC (5 min)
 
-Ahora verificará que la función de cómputo sin servidor consumió automáticamente el mensaje de la cola SQS revisando los registros del sistema en CloudWatch Logs. Esto confirmará que el flujo de eventos se completó exitosamente de principio a fin.
+Amazon S3 almacena las imágenes de productos y activos estáticos de TechShop con una durabilidad de 99.999999999% (11 nueves). El acceso al bucket está completamente restringido: solo CloudFront puede leer los objetos mediante Origin Access Control (OAC), bloqueando cualquier acceso público directo.
 
-1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `Lambda` y haga clic en el servicio **AWS Lambda** que aparece en los resultados.
+1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `S3` y haga clic en el servicio **Amazon S3** que aparece en los resultados.
 
-2. En la lista de funciones, localice y haga clic en la función Lambda creada por su pila de CloudFormation:
-   - El nombre de la función incluirá su pila de CloudFormation y será similar a `[Iniciales]-TC-Portal-ProcesadorExpedientes`
-   - Haga clic en el nombre de la función para abrir sus detalles
+2. En la lista de buckets, localice el bucket creado por su pila. Puede identificarlo porque su nombre contiene `techshop-ha-{nombre-participante}`.
 
-3. En la página de detalles de la función Lambda, haga clic en la pestaña **Monitor** ubicada en la parte superior.
+3. Haga clic en el **nombre del bucket** para ver su contenido.
 
-4. En la sección de monitoreo, haga clic en el botón **Ver registros en CloudWatch** ubicado en la esquina superior derecha.
-   - Esto abrirá la consola de Amazon CloudWatch Logs en una nueva pestaña o ventana
+4. Verifique que el bucket contiene las imágenes de productos almacenadas en la carpeta `images/`. Debería ver archivos como `producto-1.svg`, `producto-2.svg`, etc.
 
-5. En la consola de CloudWatch Logs, verá una lista de **flujos de registro** (log streams) para la función Lambda.
+5. Verifique que el acceso público está completamente bloqueado:
+   - Haga clic en la pestaña **Permisos**
+   - En la sección **Bloquear acceso público (configuración del bucket)**, confirme que las **4 opciones** están habilitadas (todas marcadas como **Activado**)
+   - Esto garantiza que ningún objeto del bucket puede ser accedido directamente desde Internet
 
-6. Haga clic en el flujo de registro más reciente de la lista:
-   - Los flujos de registro están ordenados por fecha y hora
-   - El más reciente aparecerá en la parte superior
-   - El nombre del flujo incluirá una marca de tiempo
+6. **Prueba de acceso directo (Access Denied esperado)**:
+   - Regrese a la pestaña **Objetos** del bucket
+   - Haga clic en uno de los archivos de imagen (por ejemplo, `producto-1.svg`)
+   - En la página de detalles del objeto, copie la **URL del objeto** (la URL de S3 que comienza con `https://s3.amazonaws.com/` o `https://{bucket-name}.s3.amazonaws.com/`)
+   - Pegue esta URL en una nueva pestaña del navegador
+   - Resultado esperado: **Access Denied** — esto confirma que el acceso directo al bucket S3 está bloqueado
 
-7. En el flujo de registro, desplácese por los eventos de registro y busque el texto del mensaje que publicó en el Paso 9.
+7. **Prueba de acceso via CloudFront (funciona correctamente)**:
+   - Regrese a la pestaña de CloudFormation con las salidas de su pila
+   - Copie la URL de **CloudFrontURL** y agregue la ruta de la imagen al final (por ejemplo, `https://dXXXXXXXXXXXXX.cloudfront.net/images/producto-1.svg`)
+   - Pegue esta URL en una nueva pestaña del navegador
+   - Resultado esperado: **La imagen se muestra correctamente** — CloudFront tiene acceso al bucket S3 a través del OAC
 
-8. Localice y valide la presencia del texto exacto:
+**Justificación de alta disponibilidad**: Amazon S3 ofrece una durabilidad de 99.999999999% (11 nueves), lo que significa que los datos almacenados están protegidos contra pérdida con una probabilidad extremadamente alta. S3 replica automáticamente los objetos en múltiples instalaciones dentro de la región, garantizando que las imágenes de productos y activos estáticos de TechShop estén siempre disponibles incluso si una instalación de almacenamiento experimenta un fallo.
+
+**✓ Verificación**: Confirme que:
+- El bucket S3 contiene las imágenes de productos en la carpeta `images/`
+- Las 4 opciones de **Bloquear acceso público** están **Activadas**
+- El acceso directo via URL de S3 muestra **Access Denied**
+- El acceso via URL de CloudFront muestra la imagen correctamente
+
+### Paso 10: Inspeccionar WAF (5 min)
+
+AWS WAF (Web Application Firewall) protege TechShop contra ataques web comunes como inyección SQL, cross-site scripting (XSS) y otros patrones de tráfico malicioso. La WebACL está configurada con scope CLOUDFRONT, lo que significa que filtra el tráfico en el edge antes de que llegue a la infraestructura de origen.
+
+1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `WAF` y haga clic en el servicio **AWS WAF** que aparece en los resultados.
+
+2. En la consola de WAF, verifique que la región seleccionada en la parte superior muestra **Global (CloudFront)**. Si no es así, haga clic en el selector de región y seleccione **Global (CloudFront)**.
+
+⚠️ **Importante**: Las WebACL con scope CLOUDFRONT solo son visibles cuando se selecciona la región **Global (CloudFront)** en la consola de WAF. Si selecciona una región específica como us-east-1, no verá la WebACL.
+
+3. En el panel de navegación de la izquierda, haga clic en **Web ACLs**.
+
+4. Localice la WebACL creada por su pila. Puede identificarla porque su nombre contiene `techshop-ha-{nombre-participante}`.
+
+5. Haga clic en el **nombre de la WebACL** para ver sus detalles.
+
+6. En la pestaña **Overview**, verifique los siguientes detalles:
+   - **Scope**: CLOUDFRONT — la WebACL opera a nivel global en las ubicaciones de borde de CloudFront
+
+7. Haga clic en la pestaña **Associated AWS resources** (Recursos de AWS asociados) y verifique que la WebACL está asociada a la distribución de CloudFront de su pila.
+
+8. Haga clic en la pestaña **Rules** (Reglas) y verifique que contiene el grupo de reglas administrado **AWSManagedRulesCommonRuleSet**. Este grupo de reglas proporciona protección contra:
+   - Inyección SQL (SQLi)
+   - Cross-site scripting (XSS)
+   - Inclusión de archivos locales y remotos
+   - Otros patrones de ataque web comunes definidos por el equipo de seguridad de AWS
+
+**Justificación de alta disponibilidad**: WAF actúa como un firewall de aplicaciones web en el edge, filtrando y bloqueando tráfico malicioso antes de que alcance la infraestructura de TechShop. Esto protege los servidores de origen (ALB y EC2) contra ataques que podrían saturar los recursos o explotar vulnerabilidades, contribuyendo a mantener la disponibilidad del servicio incluso bajo intentos de ataque.
+
+**✓ Verificación**: Confirme que:
+- La consola de WAF muestra la región **Global (CloudFront)**
+- La WebACL tiene scope **CLOUDFRONT** y está asociada a la distribución de CloudFront de su pila
+- La pestaña de reglas contiene el grupo de reglas administrado **AWSManagedRulesCommonRuleSet**
+
+### Paso 11: Verificar caching de CloudFront (5 min)
+
+Ahora verificará en la práctica cómo funciona el caching de CloudFront. Al acceder a un recurso estático por primera vez, CloudFront lo obtiene del origen (S3) y lo almacena en la ubicación de borde más cercana. En solicitudes posteriores, CloudFront sirve el contenido directamente desde su caché sin contactar al origen, reduciendo la latencia significativamente.
+
+1. Abra las herramientas de desarrollador de su navegador:
+   - Presione la tecla **F12** en su teclado, o
+   - Haga clic derecho en cualquier parte de la página y seleccione **Inspeccionar**
+
+2. En las herramientas de desarrollador, haga clic en la pestaña **Network** (Red).
+
+3. Asegúrese de que la grabación de red está activa (el botón de grabación debe estar en rojo).
+
+4. En la barra de direcciones del navegador, acceda a un recurso estático a través de la URL de CloudFront. Utilice la URL de CloudFront de las salidas de su pila y agregue la ruta de una imagen, por ejemplo:
    ```
-   Se ha emitido la resolución del Expediente N° 001-2026 sobre Habeas Corpus
+   https://dXXXXXXXXXXXXX.cloudfront.net/images/producto-1.svg
    ```
+   Reemplace `dXXXXXXXXXXXXX` con el identificador de su distribución de CloudFront.
 
-9. Observe también otros detalles en los registros:
-   - Información sobre el evento SQS que activó la función
-   - Detalles del procesamiento del mensaje
-   - Confirmación de que el mensaje fue procesado exitosamente
+5. En la pestaña **Network** de las herramientas de desarrollador, haga clic en la solicitud del recurso (por ejemplo, `producto-1.svg`).
 
-**💡 Explicación técnica - Procesamiento sin servidor:**
+6. En el panel de detalles de la solicitud, haga clic en la pestaña **Headers** (Encabezados) y busque el encabezado de respuesta **X-Cache**. En esta primera solicitud, debería mostrar:
+   ```
+   X-Cache: Miss from cloudfront
+   ```
+   Esto indica que CloudFront no tenía el recurso en su caché y tuvo que obtenerlo del origen (S3).
 
-Lo que acaba de confirmar es el funcionamiento completo de una arquitectura orientada a eventos sin servidor:
+7. Ahora **refresque la página** (presione F5 o Ctrl+R) para realizar una segunda solicitud al mismo recurso.
 
-1. **Usted publicó un mensaje** en Amazon SNS (Paso 9)
-2. **SNS entregó el mensaje** automáticamente a la cola SQS (Paso 10)
-3. **SQS activó la función Lambda** automáticamente cuando detectó el nuevo mensaje
-4. **Lambda extrajo el mensaje** de la cola, ejecutó su código de procesamiento, y registró la actividad en CloudWatch Logs
-5. **Todo esto ocurrió sin intervención humana** — ningún administrador tuvo que hacer clic en nada ni ejecutar ningún script manualmente
+8. En la pestaña **Network**, haga clic nuevamente en la solicitud del recurso y verifique el encabezado **X-Cache**. Esta vez debería mostrar:
+   ```
+   X-Cache: Hit from cloudfront
+   ```
+   Esto indica que CloudFront sirvió el recurso directamente desde su caché en la ubicación de borde, sin contactar al origen S3.
 
-**Ventajas del procesamiento sin servidor:**
-
-- **Sin servidores que gestionar**: No hay instancias EC2 que aprovisionar, parchear o monitorear para el procesamiento de expedientes
-- **Escalabilidad automática**: Si llegan 1,000 mensajes, Lambda puede procesar múltiples mensajes en paralelo automáticamente
-- **Pago por uso**: Solo paga por el tiempo de ejecución real de la función (milisegundos), no por servidores inactivos esperando trabajo
-- **Alta disponibilidad integrada**: Lambda se ejecuta automáticamente en múltiples zonas de disponibilidad sin configuración adicional
+**Beneficio del caching**: La diferencia entre "Miss" y "Hit" demuestra el valor del caching de CloudFront. Cuando el contenido se sirve desde la caché (Hit), la latencia se reduce drásticamente porque el recurso se entrega desde la ubicación de borde más cercana al usuario, en lugar de viajar hasta el bucket S3 en la región us-east-1. En una aplicación de producción con usuarios globales, esto puede significar la diferencia entre tiempos de carga de milisegundos versus segundos.
 
 **✓ Verificación**: Confirme que:
-- Localizó correctamente la función Lambda `ProcesadorExpedientes` de su pila
-- Navegó exitosamente a CloudWatch Logs desde la pestaña **Monitor**
-- Abrió el flujo de registro más reciente
-- Encontró el texto exacto del mensaje publicado en el Paso 9 dentro de los registros
-- Comprende que Lambda detectó, extrajo y procesó el mensaje automáticamente sin intervención humana
-
-**💡 Tip del instructor - Arquitectura completa de eventos:**
-
-Ha completado la validación de una arquitectura orientada a eventos de principio a fin:
-
-```
-SNS Topic → SQS Queue → Lambda Function → CloudWatch Logs
-(Paso 9)    (Paso 10)    (Paso 11)         (Paso 11)
-```
-
-Esta arquitectura es fundamental para sistemas modernos de misión crítica porque:
-- **Desacopla componentes**: Cada servicio puede evolucionar independientemente
-- **Absorbe picos de tráfico**: SQS actúa como buffer durante cargas masivas
-- **Garantiza procesamiento**: Los mensajes no se pierden y se reintentan automáticamente en caso de fallo
-- **Escala automáticamente**: Lambda procesa más mensajes en paralelo cuando la demanda aumenta
-- **Proporciona observabilidad**: CloudWatch Logs registra toda la actividad para auditoría y debugging
-
-El portal ahora puede publicar miles de expedientes simultáneamente con la confianza de que todos serán procesados de manera ordenada, confiable y auditable.
+- La primera solicitud al recurso estático muestra el encabezado `X-Cache: Miss from cloudfront`
+- La segunda solicitud (después de refrescar) muestra el encabezado `X-Cache: Hit from cloudfront`
+- El recurso estático se carga correctamente en ambas solicitudes
 
 ---
 
-## Fase 4: IA para el Ciudadano (20 min)
+## Fase 4: Observabilidad con CloudWatch (20 min)
 
-### Paso 12: Chatbot con Amazon Bedrock
+En esta fase, inspeccionará los mecanismos de observabilidad proactiva que permiten detectar y responder a problemas antes de que afecten a los usuarios de TechShop. Revisará las alarmas configuradas, el dashboard centralizado de métricas, las métricas de CloudFront, y realizará una revisión final de las cuatro capas de alta disponibilidad validadas durante el laboratorio.
 
-Ahora interactuará con el asistente constitucional impulsado por Inteligencia Artificial Generativa para comprobar cómo Amazon Bedrock puede traducir términos jurídicos complejos a un lenguaje sencillo que cualquier ciudadano pueda comprender.
+### Paso 12: Inspeccionar alarmas de CloudWatch (5 min)
 
-1. Regrese a la pestaña de su navegador donde tiene abierto el Portal del Ciudadano.
-   - Si cerró la pestaña, puede volver a abrir el portal usando la URL del Application Load Balancer que obtuvo en el Paso 4 (pestaña **Salidas** de CloudFormation)
+Las alarmas de CloudWatch proporcionan monitoreo proactivo al evaluar continuamente métricas clave de la infraestructura y cambiar de estado cuando se superan los umbrales definidos. La pila de TechShop incluye dos alarmas críticas: una para detectar alta utilización de CPU en las instancias EC2 y otra para detectar errores 5xx en el ALB.
 
-2. En la página principal del portal, localice y haga clic en el enlace o botón de navegación que dice **"Asistente Constitucional"** o **"Chatbot"**.
-   - Esto lo llevará a la interfaz del asistente de IA
+1. En la barra de búsqueda global de la consola de AWS (parte superior), escriba `CloudWatch` y haga clic en el servicio **Amazon CloudWatch** que aparece en los resultados.
 
-3. En la interfaz del chatbot, localice el campo de texto donde puede escribir su pregunta.
+2. En el panel de navegación de la izquierda, haga clic en **Alarmas** y luego en **Todas las alarmas**.
 
-4. Escriba exactamente la siguiente pregunta en el campo de texto:
-   ```
-   ¿Qué es un recurso de agravio constitucional?
-   ```
+3. Localice las dos alarmas creadas por su pila. Puede identificarlas porque sus nombres contienen `techshop-ha-{nombre-participante}`.
 
-5. Haga clic en el botón **Enviar** o presione la tecla **Enter** para enviar la pregunta al asistente.
+4. Identifique la **alarma de CPU alta** y haga clic en su nombre para ver los detalles. Verifique la siguiente configuración:
+   - **Namespace**: AWS/EC2
+   - **Métrica**: CPUUtilization
+   - **Umbral**: Mayor que **80%** — se activa cuando la utilización promedio de CPU supera el 80%
+   - **Período**: **300 segundos** (5 minutos) — cada punto de datos representa el promedio de 5 minutos
+   - **Períodos de evaluación**: **2** — la alarma requiere que el umbral se supere durante 2 períodos consecutivos (10 minutos totales) antes de cambiar a estado ALARM, evitando falsas alarmas por picos momentáneos
 
-6. Observe que aparece el mensaje **"Procesando su consulta con Amazon Bedrock..."** mientras el sistema procesa su pregunta.
+5. Regrese a la lista de alarmas y haga clic en la **alarma de errores 5xx** para ver sus detalles. Verifique la siguiente configuración:
+   - **Namespace**: AWS/ApplicationELB
+   - **Métrica**: HTTPCode_ELB_5XX_Count
+   - **Umbral**: Mayor que **10** — se activa cuando el número de errores 5xx supera 10 en un período
+   - **Período**: **300 segundos** (5 minutos)
+   - **Períodos de evaluación**: **1** — la alarma cambia a estado ALARM inmediatamente cuando se supera el umbral en un solo período, ya que los errores 5xx son críticos y requieren atención inmediata
 
-⏱️ **Nota**: La respuesta de Amazon Bedrock puede tardar entre 3 y 10 segundos, ya que el modelo de IA generativa está procesando su consulta en tiempo real. Este tiempo es normal y depende de la complejidad de la pregunta.
+6. Observe el **estado actual** de cada alarma. Los posibles estados son:
+   - **OK** (verde): La métrica está dentro de los límites normales. La infraestructura funciona correctamente.
+   - **ALARM** (rojo): La métrica ha superado el umbral definido durante los períodos de evaluación configurados. Requiere atención.
+   - **INSUFFICIENT_DATA** (gris): CloudWatch no tiene suficientes datos para evaluar la alarma. Esto es normal para alarmas recién creadas o cuando las métricas aún no se han generado.
 
-   - Durante este tiempo, la aplicación web está realizando una llamada API a Amazon Bedrock
-   - Bedrock invoca un modelo de lenguaje fundacional (foundation model)
-   - El modelo procesa su pregunta y genera una respuesta en lenguaje natural
-
-7. Observe la respuesta que aparece en el área de chat del asistente.
-
-8. Valide que el asistente responde con una explicación clara y en lenguaje natural que sea fácil de comprender para un ciudadano sin formación legal.
-   - La respuesta debe explicar el concepto de "recurso de agravio constitucional" en términos sencillos
-   - La respuesta debe ser coherente, relevante y contextualizada al ámbito constitucional
-   - Si aparece el mensaje "Lo sentimos, no se pudo procesar su consulta. Verifique que el modelo de Amazon Bedrock esté habilitado en su cuenta.", consulte la sección de [Solución de problemas](#solución-de-problemas)
-
-**💡 Tip del instructor - Flujo técnico de Amazon Bedrock:**
-
-Lo que acaba de experimentar involucra varios pasos técnicos que ocurren en tiempo real:
-
-1. **Frontend captura la pregunta**: El JavaScript de la aplicación web (chatbot.js) captura el texto que escribió
-2. **Llamada al backend**: La aplicación envía una solicitud HTTP al backend API ejecutándose en las instancias EC2
-3. **Backend invoca Bedrock**: El backend hace una llamada a la API `InvokeModel` de Amazon Bedrock, pasando su pregunta como prompt
-4. **Modelo fundacional procesa**: Bedrock ejecuta un modelo de IA generativa (como Claude, Titan u otro) que analiza su pregunta y genera una respuesta contextualizada
-5. **Respuesta regresa al frontend**: La respuesta generada viaja de vuelta a través del backend hacia el navegador
-6. **Visualización en tiempo real**: El JavaScript muestra la respuesta en la interfaz del chat
-
-Todo este flujo ocurre en cuestión de segundos, proporcionando una experiencia interactiva fluida para el ciudadano.
-
-**Ventajas de Amazon Bedrock para el Portal del Ciudadano:**
-
-- **Sin entrenar modelos**: No es necesario entrenar modelos de IA desde cero — puede usar modelos fundacionales pre-entrenados
-- **Lenguaje natural**: Los ciudadanos pueden hacer preguntas en español coloquial y recibir respuestas comprensibles
-- **Escalabilidad**: Bedrock escala automáticamente para atender miles de consultas simultáneas durante fallos de alto perfil
-- **Actualización continua**: Los modelos fundacionales se actualizan regularmente con nuevos conocimientos sin intervención del equipo
-- **Democratización del acceso**: Ciudadanos sin conocimientos legales pueden comprender conceptos constitucionales complejos
+**Justificación de alta disponibilidad**: Las alarmas de CloudWatch proporcionan monitoreo proactivo que permite detectar problemas antes de que afecten a los usuarios. La alarma de CPU alta detecta cuando las instancias EC2 están sobrecargadas, lo que podría indicar la necesidad de escalar. La alarma de errores 5xx detecta cuando el ALB está devolviendo errores del servidor, lo que podría indicar fallos en las instancias de backend. En una arquitectura de producción, estas alarmas se conectarían a acciones automáticas (como políticas de escalado) o notificaciones SNS para alertar al equipo de operaciones.
 
 **✓ Verificación**: Confirme que:
-- Navegó exitosamente a la sección **Asistente Constitucional** o **Chatbot** del portal
-- Escribió la pregunta exacta especificada sobre el recurso de agravio constitucional
-- El asistente respondió con una explicación clara y en lenguaje natural
-- La respuesta es relevante, coherente y fácil de comprender para un ciudadano sin formación legal
-- Comprende que la aplicación web hizo una llamada API a Amazon Bedrock para generar la respuesta
+- Existen **2 alarmas** de CloudWatch asociadas a su pila: una para CPU alta y otra para errores 5xx
+- La alarma de CPU alta tiene umbral **80%**, período **300s** y **2 períodos de evaluación**
+- La alarma de errores 5xx tiene umbral **10**, período **300s** y **1 período de evaluación**
+- Cada alarma muestra un estado actual (**OK**, **ALARM** o **INSUFFICIENT_DATA**)
 
-**💡 Tip del instructor - Impacto social:**
+### Paso 13: Inspeccionar dashboard de CloudWatch (5 min)
 
-Lo que acaba de probar tiene un impacto profundo en la democratización del acceso a la justicia. Históricamente, los documentos legales y constitucionales han sido inaccesibles para ciudadanos comunes debido al lenguaje técnico y la complejidad jurídica.
+El dashboard de CloudWatch proporciona una vista centralizada de las métricas más importantes de la infraestructura de TechShop en un solo panel. Esto permite al equipo de operaciones monitorear el estado general del sistema de un vistazo, sin necesidad de navegar entre múltiples consolas de servicios.
 
-Con un asistente de IA integrado en el Portal del Ciudadano:
-- Un ciudadano puede preguntar "¿Qué es un habeas corpus?" y recibir una explicación simple
-- Un estudiante puede consultar "¿Cuándo puedo presentar un amparo?" sin necesidad de contratar un abogado
-- Un periodista puede entender rápidamente las implicaciones de un fallo constitucional complejo
+1. En la consola de CloudWatch, en el panel de navegación de la izquierda, haga clic en **Paneles de control**.
 
-Esta tecnología no reemplaza el asesoramiento legal profesional, pero reduce significativamente la barrera de entrada para que cualquier persona pueda comprender sus derechos constitucionales fundamentales.
+2. Localice el dashboard creado por su pila. Puede identificarlo porque su nombre contiene `techshop-ha-{nombre-participante}`.
 
-### Paso 13: Síntesis de voz con Amazon Polly
+3. Haga clic en el **nombre del dashboard** para abrirlo.
 
-Ahora comprobará cómo el Portal del Ciudadano cumple con las regulaciones de inclusión y accesibilidad para ciudadanos con discapacidad visual mediante la síntesis de voz con Amazon Polly.
+4. Inspeccione los **4 widgets** de métricas que componen el dashboard:
 
-1. En el Portal del Ciudadano, localice y haga clic en el enlace o botón de navegación que dice **"Resoluciones"** o **"Últimos Fallos"**.
-   - Esto lo llevará a la sección donde se publican las resoluciones judiciales
+   - **EC2 CPU Utilization**: Muestra la utilización promedio de CPU de las instancias EC2 del Auto Scaling Group. Una utilización consistentemente alta (por encima del 70-80%) indica que las instancias están sobrecargadas y podría ser necesario escalar horizontalmente (agregar más instancias).
 
-2. En la sección de resoluciones, localice una resolución de ejemplo precargada que contiene un bloque de texto con el resumen de una sentencia.
-   - El texto puede ser un resumen de un fallo sobre habeas corpus, amparo u otro tema constitucional
+   - **ALB Request Count**: Muestra el número total de solicitudes que recibe el Application Load Balancer. Este widget permite identificar patrones de tráfico, picos de demanda y tendencias de uso. Un aumento repentino podría indicar un evento de ventas o un posible ataque.
 
-3. Junto al bloque de texto de la resolución, localice el botón o icono que dice **"Escuchar Resumen"** o muestra un icono de reproducción (▶).
+   - **ALB Target Response Time**: Muestra el tiempo promedio que tardan las instancias EC2 en responder a las solicitudes del ALB. Un aumento en el tiempo de respuesta puede indicar que las instancias están sobrecargadas, que la base de datos está lenta, o que existe un problema de rendimiento en la aplicación.
 
-4. Haga clic en el botón **"Escuchar Resumen"**.
-   - Observe que el texto del botón cambia a **"Generando audio con Amazon Polly..."** mientras se procesa la solicitud
+   - **RDS Database Connections**: Muestra el número de conexiones activas a la base de datos RDS MySQL. Un número alto de conexiones puede indicar que la aplicación está bajo carga pesada o que existen conexiones que no se están cerrando correctamente.
 
-5. Espere unos segundos mientras el sistema genera el audio.
-
-⏱️ **Nota**: La generación de audio con Amazon Polly puede tardar entre 2 y 5 segundos dependiendo de la longitud del texto.
-
-   - Durante este tiempo, la aplicación web está enviando el texto al backend
-   - El backend hace una llamada a la API `SynthesizeSpeech` de Amazon Polly
-   - Polly convierte el texto en audio MP3 con una voz neural en español
-
-6. Observe que el navegador comienza a reproducir automáticamente un archivo de audio MP3.
-
-7. Escuche el audio y valide que:
-   - La voz es natural y fluida (no robótica)
-   - La pronunciación en español es correcta
-   - La entonación y el ritmo son apropiados para la lectura de un documento legal
-   - El audio corresponde al texto visible en la pantalla
-
-8. Si lo desea, puede pausar, reproducir nuevamente o ajustar el volumen usando los controles del reproductor de audio del navegador.
-
-**💡 Tip del instructor - Cumplimiento de regulaciones de inclusión:**
-
-Lo que acaba de experimentar es el cumplimiento de las regulaciones de accesibilidad e inclusión para personas con discapacidad visual. Muchos países tienen leyes que requieren que los portales gubernamentales proporcionen alternativas de audio para contenido textual.
-
-Con Amazon Polly integrado en el Portal del Ciudadano:
-- **Ciudadanos con discapacidad visual** pueden escuchar las resoluciones judiciales en lugar de depender de lectores de pantalla genéricos
-- **Ciudadanos con dislexia** pueden beneficiarse de la lectura en voz alta para mejorar la comprensión
-- **Ciudadanos con bajo nivel de alfabetización** pueden acceder a la información judicial de manera más efectiva
-- **Ciudadanos en movimiento** pueden escuchar las resoluciones mientras realizan otras actividades
-
-**Ventajas de Amazon Polly:**
-
-- **Voces neurales realistas**: Polly utiliza tecnología de síntesis de voz neural que suena natural y humana, no robótica
-- **Múltiples idiomas y voces**: Soporte para español latinoamericano, español de España, y múltiples voces masculinas y femeninas
-- **Conversión en tiempo real**: El texto se convierte a audio en cuestión de segundos, sin necesidad de pre-grabar archivos
-- **Sin entrenar modelos**: No es necesario entrenar modelos de Machine Learning — Polly es un servicio completamente gestionado
-- **Escalabilidad**: Puede generar miles de audios simultáneamente durante picos de tráfico
-- **Costo eficiente**: Pago por carácter convertido, sin costos de infraestructura de servidores de audio
-
-**Flujo técnico de Amazon Polly:**
-
-1. **Usuario hace clic en "Escuchar Resumen"**: El JavaScript captura el texto de la resolución
-2. **Llamada al backend**: La aplicación envía el texto al backend API en EC2
-3. **Backend invoca Polly**: El backend hace una llamada a `SynthesizeSpeech` con el texto y parámetros de voz (idioma: español, voz neural)
-4. **Polly genera audio**: Amazon Polly convierte el texto en un stream de audio MP3
-5. **Audio regresa al navegador**: El backend envía el audio al frontend
-6. **Reproducción automática**: El navegador reproduce el audio usando el elemento `<audio>` de HTML5
+⏱️ **Nota**: Las métricas pueden tardar aproximadamente **5 minutos** en aparecer en el dashboard después de que la pila se haya creado. Si los widgets muestran "No data available" o aparecen vacíos, espere unos minutos y refresque el dashboard haciendo clic en el icono de actualización en la esquina superior derecha.
 
 **✓ Verificación**: Confirme que:
-- Navegó exitosamente a la sección **Resoluciones** o **Últimos Fallos**
-- Localizó una resolución de ejemplo con texto precargado
-- Hizo clic en el botón **"Escuchar Resumen"** o icono de reproducción
-- El navegador reprodujo un archivo de audio MP3 con voz neural en español
-- La voz es natural, fluida y la pronunciación es correcta
-- El audio corresponde al texto visible en la pantalla
-- Comprende que Amazon Polly convirtió el texto a voz en tiempo real sin entrenar modelos ML
+- El dashboard de CloudWatch muestra **4 widgets** de métricas
+- Los widgets corresponden a: **EC2 CPU Utilization**, **ALB Request Count**, **ALB Target Response Time** y **RDS Database Connections**
+- Al menos algunos widgets muestran datos o puntos de métricas (si la pila lleva más de 5 minutos creada)
 
-**💡 Tip del instructor - Impacto en accesibilidad:**
+### Paso 14: Verificar métricas de CloudFront en CloudWatch (5 min)
 
-El Portal del Ciudadano ahora cumple con las regulaciones de inclusión para ciudadanos con discapacidad visual. Esto no es solo un requisito legal — es un imperativo ético en una democracia moderna.
+CloudFront publica automáticamente métricas operativas en CloudWatch que permiten monitorear el rendimiento y la efectividad de la distribución de contenido. Estas métricas ayudan a entender cuánto tráfico está manejando CloudFront y qué porcentaje del contenido se está sirviendo desde la caché.
 
-Antes de esta integración, una persona con discapacidad visual dependía de:
-- Lectores de pantalla genéricos que pueden tener dificultades con terminología legal
-- Asistencia de terceros para leer documentos judiciales (comprometiendo privacidad)
-- Versiones en Braille que tardan semanas en producirse y distribuirse
+1. En la consola de CloudWatch, en el panel de navegación de la izquierda, haga clic en **Métricas** y luego en **Todas las métricas**.
 
-Con Amazon Polly integrado:
-- **Acceso inmediato**: Las resoluciones están disponibles en audio en el mismo momento que se publican
-- **Independencia**: Los ciudadanos pueden acceder a la información sin depender de terceros
-- **Privacidad**: No es necesario compartir información personal con asistentes humanos
-- **Igualdad de acceso**: Todos los ciudadanos, independientemente de su capacidad visual, tienen acceso simultáneo a la justicia constitucional
+2. En la parte inferior de la pantalla, en la sección de búsqueda de métricas, escriba `CloudFront` y presione Enter.
 
-Esta es la verdadera promesa de la tecnología en el sector público: no solo eficiencia operativa, sino inclusión y democratización del acceso a derechos fundamentales.
+3. Haga clic en el namespace **CloudFront** que aparece en los resultados. Luego haga clic en **Per-Distribution Metrics** para ver las métricas por distribución.
+
+4. Localice las métricas de su distribución de CloudFront e inspeccione las siguientes métricas clave:
+
+   - **Requests** (Solicitudes totales): Muestra el número total de solicitudes HTTP/HTTPS que CloudFront ha recibido. Esta métrica indica el volumen de tráfico que la CDN está manejando, descargando los servidores de origen.
+
+   - **BytesDownloaded**: Muestra el volumen total de datos transferidos desde CloudFront a los usuarios. Permite entender el consumo de ancho de banda de la distribución.
+
+5. Para visualizar una métrica, seleccione la casilla de verificación junto a ella. El gráfico en la parte superior de la pantalla mostrará los datos de la métrica seleccionada.
+
+6. Comprenda cómo estas métricas ayudan a evaluar la efectividad de la CDN:
+   - Un alto número de **Requests** indica que CloudFront está manejando tráfico significativo, protegiendo los servidores de origen de la carga directa
+   - La relación entre solicitudes totales y las que llegan al origen indica la **efectividad del caching**: cuantas más solicitudes se sirvan desde la caché (cache hits), menor será la carga en los servidores de origen y menor la latencia para los usuarios
+
+**✓ Verificación**: Confirme que:
+- El namespace **CloudFront** aparece en la lista de métricas de CloudWatch
+- Puede ver métricas como **Requests** y **BytesDownloaded** para su distribución
+- Al seleccionar una métrica, el gráfico muestra datos (si ha accedido previamente a la URL de CloudFront)
+
+### Paso 15: Revisión final de capas de alta disponibilidad (5 min)
+
+Ha completado la inspección de toda la arquitectura de alta disponibilidad de TechShop. En este paso final, recapitulará las cuatro capas de resiliencia que ha validado durante el laboratorio y cómo cada una contribuye a garantizar que TechShop permanezca en línea durante los picos de tráfico más exigentes.
+
+**Las 4 capas de alta disponibilidad de TechShop:**
+
+**Capa 1 - Redundancia de cómputo: EC2 Auto Scaling + ALB** (validada en el Paso 6)
+- El Auto Scaling Group mantiene entre 2 y 4 instancias EC2 distribuidas en dos zonas de disponibilidad (us-east-1a y us-east-1b)
+- El Application Load Balancer distribuye el tráfico entre las instancias saludables y detecta automáticamente instancias fallidas mediante health checks
+- Cuando una instancia falla, Auto Scaling lanza automáticamente una instancia de reemplazo mientras el ALB redirige el tráfico a las instancias restantes
+- Usted validó esta capa al terminar una instancia EC2 y confirmar que el sitio permaneció en línea
+
+**Capa 2 - Protección de datos: RDS Multi-AZ + EFS** (validada en los Pasos 5 y 7)
+- RDS Multi-AZ mantiene una réplica síncrona de la base de datos MySQL en otra zona de disponibilidad con failover automático en 60-120 segundos
+- EFS proporciona almacenamiento compartido persistente accesible desde todas las instancias EC2, permitiendo que nuevas instancias sirvan contenido inmediatamente al arrancar
+- Usted validó esta capa al inspeccionar los 2 mount targets de EFS y confirmar que RDS tiene Multi-AZ habilitado
+
+**Capa 3 - Distribución de contenido: CloudFront + S3 + WAF** (validada en los Pasos 8-11)
+- CloudFront distribuye contenido estático desde ubicaciones de borde globales, reduciendo latencia y descargando los servidores de origen
+- S3 almacena imágenes de productos con durabilidad de 99.999999999% (11 nueves), accesible exclusivamente a través de CloudFront OAC
+- WAF filtra tráfico malicioso en el edge antes de que alcance la infraestructura, protegiendo contra ataques web comunes
+- Usted validó esta capa al inspeccionar los 2 orígenes de CloudFront, confirmar que S3 bloquea acceso directo, verificar las reglas de WAF y comprobar el caching con el encabezado X-Cache
+
+**Capa 4 - Observabilidad: CloudWatch alarmas + dashboard** (validada en los Pasos 12-14)
+- Las alarmas de CloudWatch monitorean proactivamente CPU alta y errores 5xx, permitiendo detección rápida de problemas
+- El dashboard centralizado muestra métricas de CPU, solicitudes del ALB, tiempo de respuesta y conexiones de base de datos en un solo panel
+- Las métricas de CloudFront permiten evaluar la efectividad de la CDN y el volumen de tráfico manejado
+- Usted validó esta capa al inspeccionar las 2 alarmas, los 4 widgets del dashboard y las métricas de CloudFront
+
+**Resumen de servicios y su contribución a la alta disponibilidad:**
+
+| Servicio | Capa | Contribución a la Alta Disponibilidad |
+|----------|------|---------------------------------------|
+| **EC2 Auto Scaling** | Cómputo | Redundancia de servidores con escalado automático entre 2 y 4 instancias en 2 AZs |
+| **ALB** | Cómputo | Distribución de tráfico con health checks que detectan y desvían instancias fallidas |
+| **RDS Multi-AZ** | Datos | Replicación síncrona con failover automático a réplica standby en otra AZ |
+| **EFS** | Datos | Almacenamiento compartido persistente accesible desde todas las instancias EC2 |
+| **S3** | Contenido | Durabilidad de 11 nueves para imágenes y activos estáticos |
+| **CloudFront** | Contenido | Caching en ubicaciones de borde globales, reduciendo latencia y carga en origen |
+| **WAF** | Seguridad | Firewall de aplicaciones web en el edge que bloquea tráfico malicioso |
+| **CloudWatch** | Observabilidad | Monitoreo proactivo con alarmas y dashboard para detección rápida de problemas |
+
+Ha desplegado y validado exitosamente una arquitectura de alta disponibilidad completa para TechShop utilizando Infraestructura como Código con AWS CloudFormation. Esta arquitectura garantiza que TechShop puede resistir fallos de servidores, picos de tráfico de hasta 10x durante eventos como Black Friday y Cyber Monday, y ataques web comunes, mientras mantiene visibilidad completa sobre el estado de la infraestructura.
+
+Los patrones de arquitectura que ha explorado en este laboratorio — redundancia multi-AZ, balanceo de carga con health checks, replicación de base de datos, almacenamiento compartido, distribución de contenido con CDN, seguridad perimetral con WAF y observabilidad proactiva con CloudWatch — son los mismos patrones que utilizan las aplicaciones de producción a escala global en AWS.
+
+**✓ Verificación final**: Confirme que durante este laboratorio usted:
+- Desplegó ~25 recursos de AWS con un solo archivo de CloudFormation (Fase 1)
+- Validó la redundancia de cómputo simulando un fallo de servidor y confirmando la recuperación automática (Fase 2)
+- Inspeccionó la distribución de contenido con CloudFront, el acceso restringido a S3 con OAC y la protección de WAF (Fase 3)
+- Verificó la observabilidad proactiva con alarmas, dashboard y métricas de CloudWatch (Fase 4)
 
 ---
 
 ## Solución de problemas
 
-Si encuentra dificultades durante este laboratorio, consulte la [Guía de Solución de Problemas](TROUBLESHOOTING.md) que contiene soluciones a errores comunes.
+Si encuentra dificultades durante este laboratorio, consulte la [Guía de Solución de Problemas](./TROUBLESHOOTING.md) que contiene soluciones a errores comunes organizados por fase.
 
 **Errores que requieren asistencia del instructor:**
-- Errores de permisos IAM
-- Errores de límites de cuota de AWS
-- Errores de acceso a modelos de Amazon Bedrock
+
+⚠️ Si recibe alguno de los siguientes errores, notifique al instructor de inmediato. No intente solucionar estos errores por su cuenta:
+
+- Errores de permisos IAM (AccessDenied, UnauthorizedOperation)
+- Errores de límites de cuota de AWS (LimitExceededException, ResourceLimitExceeded)
 
 ## Limpieza de recursos
 
-Al finalizar el laboratorio, consulte la [Guía de Limpieza de Recursos](LIMPIEZA.md) para eliminar todos los recursos creados y evitar cargos no deseados.
+Al finalizar el laboratorio, siga las instrucciones de la [Guía de Limpieza](./LIMPIEZA.md) para eliminar los recursos creados durante el laboratorio.
 
-⚠️ **Importante**: La eliminación de la pila de CloudFormation eliminará automáticamente todos los recursos, incluyendo la base de datos RDS con todos los datos almacenados, la Web ACL de WAF y el secreto de Secrets Manager.
+⚠️ **Importante**: NO elimine la infraestructura del instructor (VPC, subredes, Internet Gateway, NAT Gateway). Solo elimine la pila de CloudFormation que usted creó (`techshop-ha-{nombre-participante}`).
